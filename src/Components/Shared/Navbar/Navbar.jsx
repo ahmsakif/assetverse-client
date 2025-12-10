@@ -11,8 +11,8 @@ const Navbar = () => {
     const getActiveClass = ({ isActive }) => {
         return (
             isActive
-                ? 'h-full py-2 px-2 rounded border border-primary text-primary hover:text-primary-content hover:bg-primary'
-                : 'h-full py-2 px-2 hover:bg-primary hover:text-primary-content rounded'
+                ? 'h-10 py-2 px-2 rounded border border-primary text-primary hover:text-primary-content hover:bg-primary'
+                : 'h-10 py-2 px-2 hover:bg-primary hover:text-primary-content rounded'
         )
     }
     // const getSidebarActiveClass = ({ isActive }) => {
@@ -69,7 +69,7 @@ const Navbar = () => {
                             }
                         </ul>
                     </div>
-                    <a className="btn btn-primary btn-outline text-base w-24">Login</a>
+                    <a className="btn btn-primary btn-outline text-base w-24 h-10">Login</a>
                 </div>
             </div>
             {/* Drawer Aside */}
