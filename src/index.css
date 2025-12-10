@@ -1,6 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Outfit:wght@100..900&display=swap');
 @import "tailwindcss";
 @plugin "daisyui";
+
+@theme {
+  --spacing-9xl: 96rem;
+}
 
 @plugin "daisyui/theme" {
   name: "AV-light";
@@ -12,9 +16,9 @@
   --color-base-300: oklch(93.268% 0.016 262.751);
   --color-base-content: oklch(41.886% 0.053 255.824);
   --color-primary: oklch(56.86% 0.255 257.57);
-  --color-primary-content: oklch(91.372% 0.051 257.57);
+  --color-primary-content: oklch(98% 0.003 247.858);
   --color-secondary: oklch(55% 0.288 302.321);
-  --color-secondary-content: oklch(88.51% 0.032 282.339);
+  --color-secondary-content: oklch(98% 0.003 247.858);
   --color-accent: oklch(59.939% 0.191 335.171);
   --color-accent-content: oklch(11.988% 0.038 335.171);
   --color-neutral: oklch(19.616% 0.063 257.651);
@@ -72,9 +76,11 @@
   --noise: 0;
 }
 
+
+
 body {
-  font-family: "Lato", sans-serif;
-  /* font-weight: 400; */
+  font-family: "Nunito Sans", sans-serif;
+  font-optical-sizing: auto;
   font-style: normal;
 }
 
