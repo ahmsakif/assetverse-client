@@ -42,7 +42,7 @@ const AuthProvider = ({children}) => {
             photoURL: photoURL,
         })
     }
-
+console.log("from auth provider ",user);
     // Forget password
     const forgetPassword = (email) => {
         return sendPasswordResetEmail(auth, email)

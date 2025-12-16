@@ -3,6 +3,7 @@ import Home from '../Pages/Home/Home';
 import { Outlet } from 'react-router';
 import Navbar from '../Components/Shared/Navbar/Navbar';
 import Footer from '../Components/Shared/Footer/Footer';
+import { Toaster } from 'react-hot-toast';
 
 const HomeLayout = () => {
     return (
@@ -12,6 +13,10 @@ const HomeLayout = () => {
                 <Outlet></Outlet>
             </section>
             <Footer></Footer>
+            <Toaster
+                position="top-center"
+                reverseOrder={false}
+            />
         </div>
     );
 };

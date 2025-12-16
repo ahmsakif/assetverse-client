@@ -46,8 +46,8 @@ const Navbar = () => {
 
     const navLinks = <>
         <li><NavLink to="/" className={getActiveClass}>Home</NavLink></li>
-        <li><NavLink to="/join-as-employee" className={getActiveClass}>Join As Employee</NavLink></li>
-        <li><NavLink to="/join-as-hr" className={getActiveClass}>Join As HR Manager</NavLink></li>
+        <li><NavLink to="/join-employee" className={getActiveClass}>Join As Employee</NavLink></li>
+        <li><NavLink to="/join-hr" className={getActiveClass}>Join As HR Manager</NavLink></li>
     </>
 
     return (
