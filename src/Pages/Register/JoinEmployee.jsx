@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router';
 import useAuth from '../../Hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { motion } from "framer-motion";
@@ -82,7 +82,7 @@ const JoinEmployee = () => {
                                 toast.success("Employee Account Created! Login Now", { id: toastId });
                                 reset()
                                 setCurrentStep(0)
-                                // navigate('/login')
+                                navigate('/login')
                             }
                         })
                 })
@@ -163,11 +163,7 @@ const JoinEmployee = () => {
                         {/* Step 1 */}
                         {
                             currentStep === 0 && (
-                                <motion.div
-                                    initial={{ x: 50, opacity: 0 }}
-                                    animate={{ x: 0, opacity: 1 }}
-                                    className="space-y-4"
-                                >
+                                <SlideLeft>
                                     <div>
                                         <h2 className='text-lg mb-3 font-semibold'>{steps[0].title}</h2>
                                         {/* Email Input */}
@@ -251,7 +247,7 @@ const JoinEmployee = () => {
                                             )
                                         }
                                     </div>
-                                </motion.div>
+                                </SlideLeft>
                             )
                         }
 
@@ -332,7 +328,7 @@ const JoinEmployee = () => {
                             }
                         </div>
                     </form>
-
+                    <p className='text-center mt-3'>Already Have an account? <span><Link className='text-blue-500 hover:underline font-semibold' to="/login">Login</Link></span></p>
                 </div>
 
             </div>

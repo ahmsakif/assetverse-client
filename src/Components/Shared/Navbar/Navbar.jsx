@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router';
+import { Link, NavLink, useNavigate } from 'react-router';
 
 const Navbar = () => {
 
@@ -94,11 +94,11 @@ const Navbar = () => {
                             }
                         </ul>
                     </div>
-                    <a className={`btn btn-primary btn-outline text-base w-24 h-10 border-2 ${
+                    <Link to='/login' className={`btn btn-primary btn-outline text-base w-24 h-10 border-2 ${
                         scrolled
                         ? ''
                         : 'text-white'
-                    }`}>Login</a>
+                    }`}>Login</Link>
                 </div>
             </div>
             {/* Drawer Aside */}

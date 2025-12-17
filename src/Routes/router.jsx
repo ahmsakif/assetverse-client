@@ -6,6 +6,7 @@ import Home from '../Pages/Home/Home';
 import JoinHR from '../Pages/Register/JoinHR';
 import JoinEmployee from '../Pages/Register/JoinEmployee';
 import AuthLayout from '../Layouts/AuthLayout';
+import Login from '../Pages/Login/Login';
 
 const router = createBrowserRouter([
     {
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
             {
                 path: '/join-employee',
                 Component: JoinEmployee,
+            },
+            {
+                path: '/login',
+                Component: Login,
             },
         ]
     }
