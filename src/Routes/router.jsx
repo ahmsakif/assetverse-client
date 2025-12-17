@@ -7,6 +7,9 @@ import JoinHR from '../Pages/Register/JoinHR';
 import JoinEmployee from '../Pages/Register/JoinEmployee';
 import AuthLayout from '../Layouts/AuthLayout';
 import Login from '../Pages/Login/Login';
+import DashboardLayout from '../Layouts/DashboardLayout';
+import HrHome from '../Pages/Home/HrHome';
+import EmployeeHome from '../Pages/Home/EmployeeHome';
 
 const router = createBrowserRouter([
     {
@@ -36,6 +39,20 @@ const router = createBrowserRouter([
             {
                 path: '/login',
                 Component: Login,
+            },
+        ]
+    },
+    {
+        path: "dashboard",
+        Component: DashboardLayout,
+        children: [
+            {
+                path: "hr",
+                Component: HrHome,
+            },
+            {
+                path: "employee",
+                Component: EmployeeHome,
             },
         ]
     }
