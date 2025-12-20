@@ -10,6 +10,9 @@ import Login from '../Pages/Login/Login';
 import DashboardLayout from '../Layouts/DashboardLayout';
 import HrHome from '../Pages/Home/HrHome';
 import EmployeeHome from '../Pages/Home/EmployeeHome';
+import DashboardHome from '../Pages/Home/DashboardHome';
+import AddAsset from '../Pages/HrPages/AddAsset';
+import AssetList from '../Pages/Shared/AssetList';
 
 const router = createBrowserRouter([
     {
@@ -47,13 +50,17 @@ const router = createBrowserRouter([
         Component: DashboardLayout,
         children: [
             {
-                path: "hr",
-                Component: HrHome,
+                index: true,
+                Component: DashboardHome,
             },
             {
-                path: "employee",
-                Component: EmployeeHome,
+                path: 'add-asset',
+                Component: AddAsset,
             },
+            {
+                path: 'asset-list',
+                Component: AssetList,
+            }
         ]
     }
 ])

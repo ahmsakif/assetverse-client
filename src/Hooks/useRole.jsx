@@ -6,19 +6,18 @@ import useAxios from './useAxios';
 const useRole = () => {
     const { user, loading } = useAuth()
     const axiosInstance = useAxios()
+
     const { data: role, isLoading: isRoleLoading } = useQuery({
 
-        queryKey: [user?.email, 'role'],
-
+        queryKey: ['role', user?.email],
         enabled: !loading && !!user?.email,
-
         queryFn: async () => {
-            const res = await axiosInstance.get(`/users/${user?.email}`)
-            return res.data.role
+            const res = await axiosInstance.get(`/users/role/${user?.email}`)
+            return res.data?.role
         }
     })
 
-    return [role, isRoleLoading]
+    return [ role, isRoleLoading ]
 };
 
-export default useRole;
+export default useRole; 

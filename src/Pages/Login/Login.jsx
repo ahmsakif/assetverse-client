@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import useAuth from '../../Hooks/useAuth';
 import { useForm } from 'react-hook-form';
-import {  FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import EmailIcon from '../../Components/Icons/EmailIcon';
 import PasswordIcon from '../../Components/Icons/PasswordIcon';
 
 import SlideLeft from '../../Components/Animation/SlideLeft';
 
 import Logo from '../../Components/Logo/Logo';
+import toast from 'react-hot-toast';
 import { handleFirebaseError } from '../../Utilities/handleFirebaseError';
 import { handleFirebaseSuccess } from '../../Utilities/handleFirebaseSuccess';
 
@@ -27,22 +28,21 @@ const Login = () => {
 
 
     const handleSignIn = async (data) => {
+        const toastId = toast.loading("Logging in to your account...")
+
         try {
-            signInUser(data.email, data.password)
-                .then(res => {
-                    console.log(res);
-                    handleFirebaseSuccess('login')
-                })
-            setLoading(false)
-            reset()
-            // console.log('user photo url', userPhotoURL);
+            await signInUser(data.email, data.password);
+
+            handleFirebaseSuccess('login', toastId);
+            setLoading(false);
+            reset();
+            navigate('/dashboard'); 
+
+        } catch (error) {
+            // console.log("Login Error Code:", error.code); 
+            setLoading(false);
+            handleFirebaseError(error.code, toastId);
         }
-        catch (error) {
-            // console.error(error);
-            setLoading(false)
-            handleFirebaseError(error.code)
-        }
-        // console.log(data)
     }
 
 
@@ -51,13 +51,13 @@ const Login = () => {
 
             {/* Left Side */}
             <div className='relative min-h-screen bg-base-200 lg:rounded-r-[100px] w-full lg:w-1/2 flex items-center'>
-                <Logo></Logo>
+                {/* <Logo></Logo> */}
                 <div className=' card w-full overflow-hidden flex flex-col justify-center items-center '>
 
 
                     <form
                         onSubmit={handleSubmit(handleSignIn)}
-                        className='relative card-body max-w-md border pt-10 rounded-xl border-gray-200 shadow-r-lg bg-base-100 w-full justify-center overflow-hidden'>
+                        className='relative card-body max-w-sm border pt-10 rounded-xl border-gray-200 shadow-r-lg bg-base-100 w-full justify-center overflow-hidden'>
 
                         <div className="mb-8 text-center">
                             <h1 className="text-2xl font-semibold text-base-content">
