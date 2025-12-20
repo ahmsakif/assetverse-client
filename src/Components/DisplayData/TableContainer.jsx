@@ -1,7 +1,7 @@
 import React from 'react';
 import AssetRow from '../AssetComponents/AssetRow';
 
-const TableContainer = ({ assets, onDelete }) => {
+const TableContainer = ({ assets, onDelete, onUpdate }) => {
 
     // if (!assets || assets.length === 0) return <div className="text-center text-2xl p-10 opacity-50">No assets found.</div>;
     console.log(assets);
@@ -29,6 +29,7 @@ const TableContainer = ({ assets, onDelete }) => {
                             asset={asset}
                             index={index}
                             onDelete={onDelete}
+                            onUpdate={onUpdate}
                         />
                     ))}
                 </ul>

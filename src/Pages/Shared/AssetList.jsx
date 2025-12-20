@@ -6,6 +6,7 @@ import useAuth from '../../Hooks/useAuth';
 import useAxios from '../../Hooks/useAxios';
 import { useQuery } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
+import UpdateAssetModal from '../../Components/AssetComponents/UpdateAssetModal';
 
 const AssetList = () => {
 
@@ -13,6 +14,8 @@ const AssetList = () => {
     const axiosInstance = useAxios()
 
     const [viewMode, setViewMode] = useState('list')
+    const [editingAsset, setEditingAsset] = useState(null)
+
     const [search, setSearch] = useState('')
     const [filterType, setFilterType] = useState('');
     const [sortOrder, setSortOrder] = useState('')
@@ -51,10 +54,10 @@ const AssetList = () => {
     })
 
     useEffect(() => {
-        if (assets.length === 0 && currentPage > 0) {
+        if (!assetLoading && assets.length === 0 && currentPage > 0) {
             setCurrentPage(prev => prev - 1);
         }
-    }, [assets, currentPage]);
+    }, [assets, currentPage, assetLoading]);
 
     const handleSearchChange = (e) => {
         setSearch(e.target.value);
@@ -115,6 +118,11 @@ const AssetList = () => {
                 }
             }
         });
+    };
+
+    const openEditModal = (asset) => {
+        setEditingAsset(asset);
+        // document.getElementById('update_modal').showModal();
     };
 
     return (
@@ -198,9 +206,9 @@ const AssetList = () => {
             {/* Content Section */}
             {
                 viewMode === 'grid' ? (
-                    <GridContainer assets={assets} onDelete={handleDelete} />
+                    <GridContainer assets={assets} onDelete={handleDelete} onUpdate={openEditModal} />
                 ) : (
-                    <TableContainer assets={assets} onDelete={handleDelete} />
+                    <TableContainer assets={assets} onDelete={handleDelete} onUpdate={openEditModal} />
                 )
             }
 
@@ -211,6 +219,15 @@ const AssetList = () => {
                     <p className="text-gray-400">Try adjusting your search or add a new asset.</p>
                 </div>
             )}
+            {
+                editingAsset && (
+                    <UpdateAssetModal
+                        asset={editingAsset}
+                        refetch={refetch}
+                        setEditingAsset={setEditingAsset}
+                    />
+                )
+            }
         </div>
     );
 };

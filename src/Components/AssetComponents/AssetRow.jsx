@@ -1,13 +1,13 @@
 import React from 'react';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 
-const AssetRow = ({ asset, index, onDelete }) => {
+const AssetRow = ({ asset, index, onDelete, onUpdate }) => {
     const { _id, productName, productImage, productType, productQuantity, dateAdded, availableQuantity } = asset;
 
     return (
         // Added 'flex gap-4' to ensure it behaves like a standard row
         <li className="list-row flex items-center gap-4 p-4 hover:bg-base-200 transition-colors duration-200 border-b border-base-200 last:border-none">
-            
+
             {/* Column 0: Sl */}
             <div className="w-8 font-bold opacity-60 text-sm">
                 {index + 1}
@@ -15,10 +15,10 @@ const AssetRow = ({ asset, index, onDelete }) => {
 
             {/* Column 1: Image (Fixed Width) */}
             <div className="w-14">
-                <img 
-                    className="size-12 rounded-lg object-cover border border-base-300 bg-base-100" 
-                    src={productImage || "https://via.placeholder.com/150"} 
-                    alt={productName} 
+                <img
+                    className="size-12 rounded-lg object-cover border border-base-300 bg-base-100"
+                    src={productImage || "https://via.placeholder.com/150"}
+                    alt={productName}
                 />
             </div>
 
@@ -57,11 +57,13 @@ const AssetRow = ({ asset, index, onDelete }) => {
 
             {/* Column 7: Actions */}
             <div className="w-20 flex gap-2 justify-end">
-                <button className="btn btn-square btn-ghost btn-sm hover:text-primary">
+                <button
+                    onClick={() => onUpdate(asset)}
+                    className="btn btn-square btn-ghost btn-sm hover:text-primary">
                     <FaEdit className="size-4" />
                 </button>
-                <button 
-                    onClick={() => onDelete(_id)} 
+                <button
+                    onClick={() => onDelete(_id)}
                     className="btn btn-square btn-ghost btn-sm hover:text-error"
                 >
                     <FaTrashAlt className="size-4" />
