@@ -13,6 +13,7 @@ import EmployeeHome from '../Pages/Home/EmployeeHome';
 import DashboardHome from '../Pages/Home/DashboardHome';
 import AddAsset from '../Pages/HrPages/AddAsset';
 import AssetList from '../Pages/Shared/AssetList';
+import RequestAsset from '../Pages/EmployeePages/RequestAsset';
 
 const router = createBrowserRouter([
     {
@@ -60,6 +61,10 @@ const router = createBrowserRouter([
             {
                 path: 'asset-list',
                 Component: AssetList,
+            },
+            {
+                path: 'request-asset',
+                Component: RequestAsset,
             }
         ]
     }

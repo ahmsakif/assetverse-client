@@ -103,6 +103,7 @@ const UpdateAssetModal = ({ asset, refetch, setEditingAsset }) => {
 
         } catch (error) {
             console.error(error);
+            handleClose()
             Swal.fire({
                 title: 'Error!',
                 text: 'Failed to update the asset.',

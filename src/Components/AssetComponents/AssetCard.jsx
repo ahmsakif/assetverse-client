@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 
-const AssetCard = ({ asset, onDelete }) => {
+const AssetCard = ({ asset, onDelete, onUpdate }) => {
     // 1. Destructure availableQuantity
     const { _id, productName, productImage, productType, productQuantity, availableQuantity, dateAdded } = asset;
 
@@ -50,7 +50,7 @@ const AssetCard = ({ asset, onDelete }) => {
 
                 <div className="card-actions justify-end mt-4 pt-3 border-t border-base-200">
                     <button className="btn btn-sm btn-square btn-ghost hover:text-primary" title="Edit">
-                        <FaEdit className="size-5" />
+                        <FaEdit onClick={()=>onUpdate(asset)} className="size-5" />
                     </button>
                     <button 
                         onClick={() => onDelete(_id)} 

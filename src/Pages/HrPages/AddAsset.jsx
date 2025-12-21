@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import useAxios from '../../Hooks/useAxios';
 import Swal from 'sweetalert2';
+import { useQuery } from '@tanstack/react-query';
 
 const image_hosting_key = import.meta.env.VITE_IMAGE_BB_API_KEY;
 const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`;
@@ -16,6 +17,16 @@ const AddAsset = () => {
     // const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
     const axiosInstance = useAxios()
+
+    const { data: hrUser } = useQuery({
+        queryKey: ['hr-profile', user?.email],
+        enabled: !!user?.email, 
+        queryFn: async () => {
+            const res = await axiosInstance.get(`/users/${user.email}`);
+            return res.data;
+        }
+    });
+    console.log(hrUser);
 
     const {
         register,
@@ -48,6 +59,7 @@ const AddAsset = () => {
                     // Initialize availableQuantity to be same as productQuantity
                     availableQuantity: parseInt(data.productQuantity),
                     hrEmail: user?.email,
+                    companyName: hrUser.companyName,
                     dateAdded: new Date(),
                 }
 
@@ -157,8 +169,8 @@ const AddAsset = () => {
                         <span>{loading ? 'Adding...' : 'Add Asset'}</span>
                         {
                             loading
-                            ? <span className="loading loading-spinner loading-xs"></span>
-                            : ''
+                                ? <span className="loading loading-spinner loading-xs"></span>
+                                : ''
                         }
                     </button>
                 </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import AssetCard from '../AssetComponents/AssetCard';
 
-const GridContainer = ({assets, onDelete}) => {
+const GridContainer = ({assets, onDelete, onUpdate}) => {
     return (
         <div>
 
@@ -11,6 +11,7 @@ const GridContainer = ({assets, onDelete}) => {
                         key={asset._id}
                         asset={asset}
                         onDelete={onDelete}
+                        onUpdate={onUpdate}
                     />
                 ))}
             </div>
