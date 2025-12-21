@@ -5,22 +5,25 @@ import useAuth from '../../Hooks/useAuth';
 import useAxios from '../../Hooks/useAxios';
 import Pagination from '../../Utilities/Pagination';
 import LoadingSpinner from '../../Utilities/LoadingSpinner';
+import RequestReviewModal from '../../Components/RequestAssetComponents/RequestReviewModal';
+import Swal from 'sweetalert2';
 
 
 const AllRequests = () => {
     const { user } = useAuth();
     const axiosInstance = useAxios();
-    
+
     // Filter & Pagination States
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(0);
     const [search, setSearch] = useState('');
+    const [selectedRequest, setSelectedRequest] = useState(null);
 
     // Fetch Requests for HR
-    const { 
-        data: requestsData = { result: [], count: 0 }, 
-        isLoading, 
-        refetch 
+    const {
+        data: requestsData = { result: [], count: 0 },
+        isLoading,
+        refetch
     } = useQuery({
         queryKey: ['all-requests', user?.email, search, currentPage, itemsPerPage],
         enabled: !!user?.email,
@@ -41,32 +44,77 @@ const AllRequests = () => {
     const totalCount = requestsData.count;
     console.log(requests);
 
-    const handleApprove = (id) => {
-        console.log("Approve", id);
-        // We will implement this next
+    //  Handle Approve
+    const handleApprove = async (request) => {
+        try {
+            const res = await axiosInstance.patch(`/requests/${request._id}`, { status: 'approved' });
+
+            // --- CRITICAL: Check for Package Limit Error from Backend ---
+            if (res.data.error) {
+                Swal.fire({
+                    title: 'Package Limit Reached',
+                    text: 'You have reached the maximum number of employees for your package. Please upgrade to approve this request.',
+                    icon: 'warning',
+                    confirmButtonText: 'Understood'
+                });
+                return;
+            }
+
+            // --- Success Case ---
+            if (res.data.modifiedCount > 0) {
+                Swal.fire('Approved', 'Request approved successfully.', 'success');
+                refetch(); // Refresh the table
+            }
+
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Error', 'Failed to approve request.', 'error');
+        }
     };
 
-    const handleReject = (id) => {
-        console.log("Reject", id);
-        // We will implement this next
-    };
+    //  Handle Reject
+    const handleReject = async (id) => {
+        // Optional: Add a Swal confirm dialog here if you want extra safety
 
-    if (isLoading) return <LoadingSpinner />;
+        try {
+            const res = await axiosInstance.patch(`/requests/${id}`, { status: 'rejected' });
+            if (res.data.modifiedCount > 0) {
+                Swal.fire('Rejected', 'Request has been rejected.', 'success');
+                refetch(); // Refresh the table
+            }
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Error', 'Failed to reject request.', 'error');
+        }
+    };
 
     return (
         <div className="p-6">
-            <h2 className="text-3xl font-bold mb-6">Asset Requests</h2>
+            <h2 className="text-3xl font-bold mb-6 text-primary">Asset Requests</h2>
 
             {/* Search Bar */}
-            <div className="mb-6">
-                <input 
-                    type="text" 
-                    placeholder="Search by requester name or email..." 
-                    className="input input-bordered w-full max-w-md"
+            <div className="mb-6 input input-bordered w-full max-w-md">
+                <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <g
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                        strokeWidth="2.5"
+                        fill="none"
+                        stroke="currentColor"
+                    >
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.3-4.3"></path>
+                    </g>
+                </svg>
+                <input
+                    type="search"
+                    placeholder="Search by asset name, requester name or email..."
+                    className=""
                     value={search}
                     onChange={(e) => {
+                        e.preventDefault
                         setSearch(e.target.value);
-                        setCurrentPage(0); // Reset to page 0 on search
+                        setCurrentPage(0);
                     }}
                 />
             </div>
@@ -87,7 +135,13 @@ const AllRequests = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {requests.length === 0 ? (
+                        {isLoading ? (
+                            <tr>
+                                <td colSpan="7" className="text-center py-10">
+                                    <span className="loading loading-spinner loading-lg"></span>
+                                </td>
+                            </tr>
+                        ) : requests.length === 0 ? (
                             <tr>
                                 <td colSpan="7" className="text-center py-10 text-gray-500">
                                     No requests found.
@@ -113,22 +167,17 @@ const AllRequests = () => {
                                             {req.requestStatus}
                                         </div>
                                     </td>
-                                    <td className="flex gap-2">
+                                    <td className="">
                                         {req.requestStatus === 'pending' && (
-                                            <>
-                                                <button 
-                                                    onClick={() => handleApprove(req._id)}
-                                                    className="btn btn-xs btn-success text-white"
-                                                >
-                                                    Approve
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleReject(req._id)}
-                                                    className="btn btn-xs btn-error text-white"
-                                                >
-                                                    Reject
-                                                </button>
-                                            </>
+                                            <button
+                                                onClick={() => setSelectedRequest(req)} // Opens the modal
+                                                className="btn btn-sm btn-primary btn-outline py-6"
+                                            >
+                                                Review Request
+                                            </button>
+                                        )}
+                                        {req.requestStatus !== 'pending' && (
+                                            <span className="text-gray-400 text-sm italic">Completed</span>
                                         )}
                                     </td>
                                 </tr>
@@ -146,6 +195,16 @@ const AllRequests = () => {
                 setItemsPerPage={setItemsPerPage}
                 totalCount={totalCount}
             />
+
+            {
+                selectedRequest && <RequestReviewModal
+                    selectedRequest={selectedRequest}
+                    setSelectedRequest={setSelectedRequest}
+                    handleReject={handleReject}
+                    handleApprove={handleApprove}
+                />
+            }
+
         </div>
     );
 };
