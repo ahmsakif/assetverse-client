@@ -10,6 +10,7 @@ import UpdateAssetModal from '../../Components/AssetComponents/UpdateAssetModal'
 import RequestTableContainer from '../../Components/RequestAssetComponents/RequestTableContainer';
 import toast from 'react-hot-toast';
 import RequestAssetModal from '../../Components/RequestAssetComponents/RequestAssetModal';
+import Pagination from '../../Utilities/Pagination';
 
 
 const RequestAsset = () => {
@@ -29,7 +30,7 @@ const RequestAsset = () => {
 
     // Fetch Data
     const {
-        data: assets = [],
+        data: assetsData = { result: [], count: 0 },
         isLoading: assetLoading,
         refetch,
     } = useQuery({
@@ -55,6 +56,8 @@ const RequestAsset = () => {
         //     }
         // }
     })
+    const assets = assetsData.result;
+    const totalCount = assetsData.count;
 
     useEffect(() => {
         if (!assetLoading && assets.length === 0 && currentPage > 0) {
@@ -88,7 +91,7 @@ const RequestAsset = () => {
         const assetToRequest = assets.find(asset => asset._id === id);
         setSelectedAsset(assetToRequest);
     }
-
+    console.log(assets);
 
     return (
         <div>
@@ -184,6 +187,13 @@ const RequestAsset = () => {
                     <p className="text-gray-400">Try adjusting your search or add a new asset.</p>
                 </div>
             )}
+            <Pagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                itemsPerPage={itemsPerPage}
+                setItemsPerPage={itemsPerPage}
+                totalCount={totalCount}
+            />
             <RequestAssetModal
                 asset={selectedAsset}
                 setAsset={setSelectedAsset}

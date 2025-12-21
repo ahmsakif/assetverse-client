@@ -12,7 +12,7 @@ import HrHome from '../Pages/Home/HrHome';
 import EmployeeHome from '../Pages/Home/EmployeeHome';
 import DashboardHome from '../Pages/Home/DashboardHome';
 import AddAsset from '../Pages/HrPages/AddAsset';
-import AssetList from '../Pages/Shared/AssetList';
+import AssetList from '../Pages/HrPages/AssetList';
 import RequestAsset from '../Pages/EmployeePages/RequestAsset';
 
 const router = createBrowserRouter([
