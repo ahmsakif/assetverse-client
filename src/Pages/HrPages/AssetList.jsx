@@ -25,7 +25,7 @@ const AssetList = () => {
 
     // Fetch Data
     const {
-        data: assets = [],
+        data: assetsData = { result: [], count: 0 },
         isLoading: assetLoading,
         refetch,
     } = useQuery({
@@ -53,6 +53,9 @@ const AssetList = () => {
         // }
     })
 
+    const assets = assetsData.result;
+    const totalCount = assetsData.count;
+    
     useEffect(() => {
         if (!assetLoading && assets.length === 0 && currentPage > 0) {
             setCurrentPage(prev => prev - 1);

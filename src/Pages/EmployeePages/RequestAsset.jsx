@@ -75,18 +75,6 @@ const RequestAsset = () => {
         setCurrentPage(0);
     };
 
-    const handleNextPage = () => {
-        if (assets.length === itemsPerPage) {
-            setCurrentPage(prev => prev + 1);
-        }
-    };
-
-    const handlePrevPage = () => {
-        if (currentPage > 0) {
-            setCurrentPage(prev => prev - 1);
-        }
-    };
-
     const handleRequestAsset = (id) => {
         const assetToRequest = assets.find(asset => asset._id === id);
         setSelectedAsset(assetToRequest);

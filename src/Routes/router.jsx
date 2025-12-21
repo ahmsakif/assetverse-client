@@ -14,6 +14,7 @@ import DashboardHome from '../Pages/Home/DashboardHome';
 import AddAsset from '../Pages/HrPages/AddAsset';
 import AssetList from '../Pages/HrPages/AssetList';
 import RequestAsset from '../Pages/EmployeePages/RequestAsset';
+import AllRequests from '../Pages/HrPages/AllRequest';
 
 const router = createBrowserRouter([
     {
@@ -65,7 +66,11 @@ const router = createBrowserRouter([
             {
                 path: 'request-asset',
                 Component: RequestAsset,
-            }
+            },
+            {
+                path: 'all-requests',
+                Component: AllRequests,
+            },
         ]
     }
 ])
