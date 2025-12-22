@@ -17,6 +17,7 @@ import RequestAsset from '../Pages/EmployeePages/RequestAsset';
 import AllRequests from '../Pages/HrPages/AllRequest';
 import MyAssets from '../Pages/EmployeePages/MyAssets';
 import MyRequest from '../Pages/EmployeePages/MyRequest';
+import MyEmployees from '../Pages/HrPages/MyEmployees';
 
 const router = createBrowserRouter([
     {
@@ -83,7 +84,7 @@ const router = createBrowserRouter([
             },
             {
                 path: 'my-employees',
-                Component: AllRequests,
+                Component: MyEmployees,
             },
             {
                 path: 'my-request',
