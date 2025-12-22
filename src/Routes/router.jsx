@@ -15,6 +15,8 @@ import AddAsset from '../Pages/HrPages/AddAsset';
 import AssetList from '../Pages/HrPages/AssetList';
 import RequestAsset from '../Pages/EmployeePages/RequestAsset';
 import AllRequests from '../Pages/HrPages/AllRequest';
+import MyAssets from '../Pages/EmployeePages/MyAssets';
+import MyRequest from '../Pages/EmployeePages/MyRequest';
 
 const router = createBrowserRouter([
     {
@@ -70,6 +72,22 @@ const router = createBrowserRouter([
             {
                 path: 'all-requests',
                 Component: AllRequests,
+            },
+            {
+                path: 'my-assets',
+                Component: MyAssets,
+            },
+            {
+                path: 'my-team',
+                Component: AllRequests,
+            },
+            {
+                path: 'my-employees',
+                Component: AllRequests,
+            },
+            {
+                path: 'my-request',
+                Component: MyRequest,
             },
         ]
     }

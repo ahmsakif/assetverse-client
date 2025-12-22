@@ -5,7 +5,8 @@ import useAuth from '../Hooks/useAuth';
 import { FaHome, FaBox, FaUserPlus, FaUsers, FaClipboardList, FaSignOutAlt, FaBars } from 'react-icons/fa';
 import { GoSidebarExpand, GoSidebarCollapse } from "react-icons/go";
 import LogoFull from '../Components/Logo/LogoFull';
-import { TbCubePlus } from "react-icons/tb";
+import { TbCubePlus, TbDevicesPlus } from "react-icons/tb";
+import { MdInventory, MdOutlineHistoryEdu } from 'react-icons/md';
 
 const DashboardLayout = () => {
     const { user, signOutUser } = useAuth();
@@ -25,15 +26,15 @@ const DashboardLayout = () => {
         { name: "Dashboard", path: "/dashboard", icon: <FaHome size={24} />, end: true },
         { name: "Asset List", path: "/dashboard/asset-list", icon: <FaBox size={24} /> },
         { name: "Add Asset", path: "/dashboard/add-asset", icon: <TbCubePlus size={24} /> },
-        { name: "All Requests", path: "/dashboard/all-requests", icon: <FaClipboardList size={24} /> },
+        { name: "All Requests", path: "/dashboard/all-requests", icon: <MdOutlineHistoryEdu size={24} /> },
         { name: "My Employees", path: "/dashboard/my-employees", icon: <FaUsers size={24} /> },
-        { name: "Add Employee", path: "/dashboard/add-employee", icon: <FaUserPlus size={24} /> },
     ];
 
     const employeeLinks = [
         { name: "Dashboard", path: "/dashboard", icon: <FaHome size={24} />, end: true },
-        { name: "My Assets", path: "/dashboard/my-assets", icon: <FaBox size={24} /> },
-        { name: "Request Asset", path: "/dashboard/request-asset", icon: <FaClipboardList size={24} /> },
+        { name: "My Assets", path: "/dashboard/my-assets", icon: <MdInventory size={24} /> },
+        { name: "Request Asset", path: "/dashboard/request-asset", icon: <TbDevicesPlus size={24} /> },
+        { name: "My Request", path: "/dashboard/my-request", icon: <MdOutlineHistoryEdu size={24} /> },
         { name: "My Team", path: "/dashboard/my-team", icon: <FaUsers size={24} /> },
     ];
 

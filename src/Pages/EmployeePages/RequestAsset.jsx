@@ -85,9 +85,10 @@ const RequestAsset = () => {
         <div>
 
             <div className='flex justify-between items-center mb-10'>
+                <title>Request Asset</title>
                 <div>
-                    <h2 className="text-4xl font-bold text-primary">Asset List</h2>
-                    <p className="text text-gray-500">Manage your company inventory</p>
+                    <h2 className="text-4xl font-bold text-primary mb-2">Request Asset</h2>
+                    <p className="text text-gray-500">Find and request your company asset</p>
                 </div>
                 {/* View Toggle */}
                 <div className='join border rounded-md border-base-300'>

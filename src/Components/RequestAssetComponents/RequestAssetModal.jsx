@@ -37,6 +37,7 @@ const RequestAssetModal = ({ asset, setAsset }) => {
             assetId: asset._id,
             assetName: asset.productName,
             assetType: asset.productType,
+            assetImage: asset.productImage,
             requesterName: user?.displayName,
             requesterEmail: user?.email,
             hrEmail: asset.hrEmail,
