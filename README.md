@@ -49,6 +49,4 @@
 
 **1. Clone the repository**
 ```bash
-git clone https://github.com/ahmsakif/assetverse-client.git
-
-Developed by Sakif Ahmed
+git clone [https://github.com/ahmsakif/assetverse-client.git](https://github.com/ahmsakif/assetverse-client.git)
