@@ -1,9 +1,9 @@
 # 🏢 AssetVerse
 
 <p align="center">
-  <img src="[https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)" />
-  <img src="[https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)" />
-  <img src="[https://img.shields.io/badge/daisyui-5A0EF8?style=for-the-badge&logo=daisyui&logoColor=white](https://img.shields.io/badge/daisyui-5A0EF8?style=for-the-badge&logo=daisyui&logoColor=white)" />
+  <img src="https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB" />
+  <img src="https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white" />
+  <img src="https://img.shields.io/badge/daisyui-5A0EF8?style=for-the-badge&logo=daisyui&logoColor=white" />
 </p>
 
 <p align="center">
@@ -11,8 +11,8 @@
 </p>
 
 <p align="center">
-  <a href="[https://assetverse-bitvotion.netlify.app/](https://assetverse-bitvotion.netlify.app/)">
-    <img src="[https://img.shields.io/badge/View_Live_Project-FF5722?style=for-the-badge&logo=netlify&logoColor=white](https://img.shields.io/badge/View_Live_Project-FF5722?style=for-the-badge&logo=netlify&logoColor=white)" alt="Live Link" />
+  <a href="https://assetverse-bitvotion.netlify.app/">
+    <img src="https://img.shields.io/badge/View_Live_Project-FF5722?style=for-the-badge&logo=netlify&logoColor=white" alt="Live Link" />
   </a>
 </p>
 
@@ -22,7 +22,7 @@
 <details>
   <summary><strong>👇 Click here to view the Full Page Screenshot</strong></summary>
   <br/>
-  <img src="[https://github.com/user-attachments/assets/7ceb2df6-c515-48cf-8b96-94a5782b57cf](https://github.com/user-attachments/assets/7ceb2df6-c515-48cf-8b96-94a5782b57cf)" width="100%" alt="AssetVerse Full Screenshot"/>
+  <img src="https://github.com/user-attachments/assets/7ceb2df6-c515-48cf-8b96-94a5782b57cf" width="100%" alt="AssetVerse Full Screenshot"/>
 </details>
 
 <br/>
