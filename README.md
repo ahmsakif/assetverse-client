@@ -50,3 +50,18 @@
 **1. Clone the repository**
 ```bash
 git clone [https://github.com/ahmsakif/assetverse-client.git](https://github.com/ahmsakif/assetverse-client.git)
+```
+**2. Navigate to the project directory**
+```bash
+cd assetverse-client
+```
+**3. Install dependencies**
+```bash
+npm install
+```
+**4. Start the development server**
+```bash
+npm run dev
+```
+---
+Developed by Sakif Ahmed
