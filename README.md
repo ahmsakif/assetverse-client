@@ -1,16 +1,32 @@
-# React + Vite
+# 🏢 AssetVerse
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![Project Screenshot]<img width="1905" height="4966" alt="assetverse-bitvotion netlify app_" src="https://github.com/user-attachments/assets/7ceb2df6-c515-48cf-8b96-94a5782b57cf" />
 
-Currently, two official plugins are available:
+## 📄 Description
+AssetVerse is a comprehensive web platform designed to streamline asset management. It allows users to track, organize, and visualize their assets efficiently. The application focuses on a user-friendly interface with real-time data updates and a modern design system.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+🔗 **Live Project:** [Link to your Vercel/Netlify site]
 
-## React Compiler
+## 🛠 Technologies Used
+* **Frontend:** React.js, Tailwind CSS, DaisyUI
+* **State Management:** Context API / TanStack Query
+* **Routing:** React Router
+* **Backend Integration:** Axios (with Interceptors)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ✨ Key Features
+* **Dashboard Analytics:** Visual summary of total assets and current status.
+* **Responsive UI:** Fully optimized for desktop, tablet, and mobile devices using Tailwind.
+* **Secure Authentication:** User login and protected routes.
+* **CRUD Operations:** Seamless capability to Add, Update, and Delete asset records.
 
-## Expanding the ESLint configuration
+## 📦 Dependencies
+* `react-router-dom`: ^6.0.0
+* `daisyui`: ^4.0.0
+* `axios`: ^1.6.0
+* `recharts`: ^2.0.0 (for data visualization)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 💻 How to Run Locally
+
+**1. Clone the repository**
+```bash
+git clone [https://github.com/ahmsakif/assetverse-client.git](https://github.com/ahmsakif/assetverse-client.git)
