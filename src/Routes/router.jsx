@@ -28,6 +28,12 @@ import EmployeeRoute from './EmployeeRoute';
 import Profile from '../Pages/Shared/Profile';
 import ErrorPage from '../Pages/ErrorPages/ErrorPage';
 import Pricing from '../Pages/Pricing/Pricing';
+import PrivacyPolicy from '../Pages/Legal/PrivacyPolicy';
+import TermsOfService from '../Pages/Legal/TermsOfService';
+import About from '../Pages/About/About';
+import Contact from '../Pages/Contact/Contact';
+import HelpSupport from '../Pages/Help/HelpSupport';
+import Features from '../Pages/Features/Features';
 
 const router = createBrowserRouter([
     {
@@ -43,6 +49,31 @@ const router = createBrowserRouter([
             {
                 path: 'pricing',
                 Component: Pricing,
+            },
+            {
+                path: '/privacy',
+                element: <PrivacyPolicy />
+            },
+            {
+                path: '/terms',
+                element: <TermsOfService />
+            },
+            {
+                path: 'about',
+                element: <About />
+            },
+            {
+                path: 'contact',
+                element: <Contact />
+                ,
+            },
+            {
+                path: 'support',
+                element: <HelpSupport />
+            },
+            {
+                path: 'features',
+                element: <Features />
             }
         ]
     },
