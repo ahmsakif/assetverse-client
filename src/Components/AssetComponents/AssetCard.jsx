@@ -1,64 +1,94 @@
 import React from 'react';
-import { FaEdit, FaTrashAlt } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaCalendarAlt, FaBoxOpen } from 'react-icons/fa';
 
 const AssetCard = ({ asset, onDelete, onUpdate }) => {
-    // 1. Destructure availableQuantity
     const { _id, productName, productImage, productType, productQuantity, availableQuantity, dateAdded } = asset;
 
+    // Calculate Stock Percentage
+    const stockPercent = Math.min((availableQuantity / productQuantity) * 100, 100);
+    const isLowStock = availableQuantity < 3;
+
     return (
-        <div className="card bg-base-100 shadow-sm hover:shadow-xl transition-shadow duration-300 border border-base-200">
-            <figure className="h-48 w-full overflow-hidden bg-white p-4">
+        <div className="group relative bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:border-primary/20 transition-all duration-500 overflow-hidden flex flex-col h-full">
+            
+            {/* --- IMAGE SECTION --- */}
+            <figure className="relative h-52 p-8 bg-slate-50/50 flex items-center justify-center overflow-hidden">
+                {/* Status Badge (Top Right) */}
+                <div className="absolute top-4 right-4 z-10">
+                    <span className={`badge border-none font-black text-[10px] uppercase tracking-widest px-3 py-3 shadow-sm ${
+                        productType === 'Returnable' 
+                        ? 'bg-indigo-50 text-indigo-500' 
+                        : 'bg-emerald-50 text-emerald-500'
+                    }`}>
+                        {productType}
+                    </span>
+                </div>
+
                 <img 
-                    src={productImage || "https://via.placeholder.com/150"} 
+                    src={productImage || "https://i.ibb.co/pL1p6w4/asset-placeholder.png"} 
                     alt={productName} 
-                    className="h-full w-full object-contain hover:scale-105 transition-transform duration-300"
+                    className="h-full w-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500" 
                 />
             </figure>
-            <div className="card-body p-5">
-                <h2 className="card-title text-base justify-between">
-                    <span className="truncate" title={productName}>{productName}</span>
-                    <div className={`badge badge-sm text-xs shrink-0 ${productType === 'Returnable' ? 'badge-error badge-outline' : 'badge-success badge-outline'}`}>
-                        {productType === 'Returnable' ? 'Ret.' : 'Non-Ret.'}
-                    </div>
-                </h2>
-                
-                {/* Stats Container */}
-                <div className="text-sm text-gray-500 space-y-1 mt-3 bg-base-200/50 p-3 rounded-lg">
-                    
-                    {/* Row 1: Total Quantity */}
-                    <div className="flex justify-between">
-                        <span>Total Quantity:</span>
-                        <span className="font-bold text-base-content">{productQuantity}</span>
-                    </div>
 
-                    {/* Row 2: Available Quantity (New) */}
-                    <div className="flex justify-between">
-                        <span>Available:</span>
-                        {/* 2. Color Logic: Green if available, Red if 0 */}
-                        <span className={`font-bold ${availableQuantity > 0 ? 'text-success' : 'text-error'}`}>
-                            {availableQuantity !== undefined ? availableQuantity : productQuantity} 
-                            {/* Fallback to productQuantity if availableQuantity is missing in DB */}
+            {/* --- CONTENT SECTION --- */}
+            <div className="p-6 flex flex-col flex-grow">
+                
+                {/* Header */}
+                <div className="mb-6">
+                    <h2 className="text-xl font-black text-slate-800 leading-tight line-clamp-2 min-h-[3.5rem]" title={productName}>
+                        {productName}
+                    </h2>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                        ID: {_id.slice(-6)}
+                    </p>
+                </div>
+
+                {/* Stock Visualizer */}
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-6">
+                    <div className="flex justify-between items-end mb-2">
+                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-1">
+                            <FaBoxOpen /> Availability
+                        </span>
+                        <span className={`text-xs font-black ${isLowStock ? 'text-rose-500' : 'text-slate-700'}`}>
+                            {availableQuantity} <span className="text-slate-400 font-medium">/ {productQuantity}</span>
                         </span>
                     </div>
-
-                    {/* Row 3: Date (Added a top border to separate it slightly) */}
-                    <div className="flex justify-between text-xs pt-2 mt-2 border-t border-base-content/10">
-                        <span>Added:</span>
-                        <span>{new Date(dateAdded).toLocaleDateString()}</span>
+                    {/* Progress Bar */}
+                    <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                        <div 
+                            className={`h-full rounded-full transition-all duration-500 ${isLowStock ? 'bg-rose-400' : 'bg-emerald-400'}`} 
+                            style={{ width: `${stockPercent}%` }}
+                        ></div>
                     </div>
                 </div>
 
-                <div className="card-actions justify-end mt-4 pt-3 border-t border-base-200">
-                    <button className="btn btn-sm btn-square btn-ghost hover:text-primary" title="Edit">
-                        <FaEdit onClick={()=>onUpdate(asset)} className="size-5" />
-                    </button>
-                    <button 
-                        onClick={() => onDelete(_id)} 
-                        className="btn btn-sm btn-square btn-ghost hover:text-error"
-                        title="Delete"
-                    >
-                        <FaTrashAlt className="size-5" />
-                    </button>
+                {/* Footer Meta */}
+                <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-slate-400">
+                        <FaCalendarAlt size={12} />
+                        <span className="text-[10px] font-bold uppercase tracking-wide">
+                            {new Date(dateAdded).toLocaleDateString()}
+                        </span>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                        <button 
+                            onClick={() => onUpdate(asset)}
+                            className="btn btn-sm btn-square rounded-xl bg-slate-50 text-slate-400 hover:bg-primary hover:text-white border-none shadow-sm transition-all"
+                            title="Edit Asset"
+                        >
+                            <FaEdit size={14} />
+                        </button>
+                        <button 
+                            onClick={() => onDelete(_id)}
+                            className="btn btn-sm btn-square rounded-xl bg-slate-50 text-slate-400 hover:bg-rose-500 hover:text-white border-none shadow-sm transition-all"
+                            title="Delete Asset"
+                        >
+                            <FaTrashAlt size={14} />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

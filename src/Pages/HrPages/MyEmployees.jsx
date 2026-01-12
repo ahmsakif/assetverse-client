@@ -1,165 +1,167 @@
 import React, { useState } from 'react';
-
 import { useQuery } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import useAuth from '../../Hooks/useAuth';
-import useAxios from '../../Hooks/useAxios';
+import useAxiosSecure from '../../Hooks/useAxiosSecure';
 import Pagination from '../../Utilities/Pagination';
-import LoadingSpinner from '../../Utilities/LoadingSpinner';
-
+import SkeletonCardLoader from '../../Utilities/SkeletonCardLoader';
+import { FaUser , FaSearch, FaCalendarAlt, FaLayerGroup } from 'react-icons/fa';
 
 const MyEmployees = () => {
     const { user } = useAuth();
-    const axiosInstance = useAxios();
-    
-    // States
+    const axiosSecure = useAxiosSecure();
+
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
-    const [itemsPerPage, setItemsPerPage] = useState(10); // Adjust grid size if needed
+    const [itemsPerPage, setItemsPerPage] = useState(12); // Grid looks better with 3 or 4 cols
 
-    // Fetch Employees (Paginated)
-    const { 
-        data: employeeData = { result: [], count: 0, packageLimit: 0 }, 
-        isLoading, 
-        refetch 
-    } = useQuery({
+    const { data: employeeData = { result: [], count: 0, packageLimit: 0 }, isLoading, refetch } = useQuery({
         queryKey: ['my-employees', user?.email, search, currentPage, itemsPerPage],
         enabled: !!user?.email,
         queryFn: async () => {
-            const res = await axiosInstance.get('/my-employees', {
-                params: { 
-                    email: user.email,
-                    search: search,
-                    page: currentPage,
-                    limit: itemsPerPage
-                }
+            const res = await axiosSecure.get('/my-employees', {
+                params: { email: user.email, search, page: currentPage, limit: itemsPerPage }
             });
             return res.data;
         }
     });
-
-
-
+console.log(employeeData.result);
     const employees = employeeData.result;
     const totalCount = employeeData.count;
+    const limit = employeeData.packageLimit;
+    const usagePercentage = Math.min(Math.round((totalCount / limit) * 100), 100);
 
-    // Handle Remove Member
     const handleRemove = (affiliationId) => {
         Swal.fire({
-            title: 'Remove from Team?',
-            text: "This will remove the employee from your company list.",
+            title: 'Remove team member?',
+            text: "They will lose access to company assets immediately.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'Yes, Remove'
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Remove Member'
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await axiosInstance.delete(`/affiliations/${affiliationId}`);
-                    Swal.fire('Removed!', 'Employee has been removed.', 'success');
+                    await axiosSecure.delete(`/affiliations/${affiliationId}`);
+                    Swal.fire('Updated', 'Employee removed from team.', 'success');
                     refetch();
                 } catch (error) {
-                    Swal.fire('Error', 'Failed to remove employee.', 'error');
+                    Swal.fire('Error', 'Action failed. Please try again.', 'error');
                 }
             }
         });
     };
 
-    if (isLoading) return <LoadingSpinner />;
-
     return (
-        <div className="p-6">
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                <h2 className="text-3xl font-bold">My Team</h2>
-                
-                {/* 📊 Package Stats */}
-                <div className="stats shadow bg-primary text-primary-content">
-                    <div className="stat place-items-center">
-                        <div className="stat-title text-primary-content opacity-80">Package Limit</div>
-                        <div className="stat-value text-2xl">
-                            {totalCount} / {employeeData.packageLimit}
-                        </div>
-                        <div className="stat-desc text-primary-content opacity-80">Employees Used</div>
+        <div className="space-y-8 animate-in fade-in duration-700">
+            <title>Team Management | AssetVerse</title>
+
+            {/* --- TOP HEADER & STATS --- */}
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <div className="space-y-1">
+                    <h2 className="text-3xl font-bold text-slate-800 tracking-tight">Team Management</h2>
+                    <p className="text-slate-500 font-medium">Manage your workforce and asset allocations.</p>
+                </div>
+
+                <div className="w-full lg:w-72 space-y-2">
+                    <div className="flex justify-between text-sm font-bold">
+                        <span className="text-slate-500 uppercase tracking-wider">Package Capacity</span>
+                        <span className={usagePercentage > 90 ? "text-error" : "text-primary"}>
+                            {totalCount} / {limit}
+                        </span>
                     </div>
+                    <progress 
+                        className={`progress w-full h-3 ${usagePercentage > 90 ? "progress-error" : "progress-primary"}`} 
+                        value={totalCount} 
+                        max={limit}
+                    ></progress>
+                    <p className="text-[10px] text-slate-400 text-right uppercase font-bold tracking-tighter">
+                        {limit - totalCount} Slots remaining
+                    </p>
                 </div>
             </div>
 
-            {/* Search Bar */}
-            <div className="mb-8">
-                <input 
-                    type="text" 
-                    placeholder="Search by name or email..." 
-                    className="input input-bordered w-full max-w-sm shadow-sm"
-                    onChange={(e) => {
-                        setSearch(e.target.value);
-                        setCurrentPage(0); // Reset to page 1 on search
-                    }}
-                />
+            {/* --- SEARCH & ACTIONS --- */}
+            <div className="flex justify-start">
+                <div className="relative w-full max-w-md group">
+                    <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+                    <input
+                        type="search"
+                        placeholder="Search by name or email..."
+                        className="input input-bordered w-full pl-12 rounded-2xl bg-white border-slate-200 focus:ring-4 focus:ring-primary/10 transition-all"
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                            setCurrentPage(0);
+                        }}
+                    />
+                </div>
             </div>
 
-            {/* 🔲 Grid View Cards */}
-            {employees.length === 0 ? (
-                <div className="text-center py-20 opacity-50 bg-base-100 rounded-lg border border-base-200">
-                    <h3 className="text-xl font-bold">No employees found.</h3>
-                    <p>Invite some team members or adjust your search.</p>
+            {/* --- EMPLOYEES GRID --- */}
+            {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {[...Array(8)].map((_, i) => <SkeletonCardLoader key={i} />)}
+                </div>
+            ) : employees.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                    <div className="bg-slate-50 p-6 rounded-full mb-4">
+                        <FaUser Friends className="text-5xl text-slate-300" />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-700">No members found</h3>
+                    <p className="text-slate-400">Try adjusting your search or invite new members.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {employees.map((member) => (
-                        <div key={member._id} className="card bg-base-100 shadow-xl border border-base-200 hover:shadow-2xl transition-all duration-300">
-                            <figure className="px-6 pt-6">
-                                <div className="avatar">
-                                    <div className="w-50 rounded-full ring ring-secondary ring-offset-base-100 ring-offset-2">
-                                        <img 
-                                            src={member.image || "https://via.placeholder.com/150"} 
-                                            alt={member.name} 
-                                            className="object-cover"
-                                        />
-                                    </div>
+                        <div key={member._id} className="group bg-white rounded-3xl border border-slate-100 p-6 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 relative overflow-hidden">
+                            {/* Status Ribbon */}
+                            <div className="absolute top-0 right-0 w-16 h-16">
+                                <div className="absolute transform rotate-45 bg-slate-50 text-slate-400 text-[10px] font-bold py-1 right-[-35px] top-[15px] w-[120px] text-center uppercase tracking-widest border-b border-slate-100">
+                                    Active
                                 </div>
-                            </figure>
-                            
-                            <div className="card-body items-center text-center">
-                                <h2 className="card-title text-xl">{member.name}</h2>
-                                <p className="text-sm text-gray-500 mb-2">{member.email}</p>
-                                
-                                {/* Info Badges */}
-                                <div className="flex gap-2 flex-wrap justify-center mb-4">
-                                    <div className="badge badge-ghost gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-4 h-4 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        {member.role || 'Member'}
+                            </div>
+
+                            <div className="flex flex-col items-center">
+                                <div className="avatar mb-4">
+                                    <div className="w-24 h-24 rounded-2xl ring ring-slate-50 ring-offset-base-100 ring-offset-4 group-hover:scale-105 transition-transform">
+                                        <img src={member.image || "https://i.ibb.co/pL1p6w4/user.png"} alt={member.name} />
                                     </div>
-                                    <div className="badge badge-secondary badge-outline gap-1">
-                                        {member.assetsCount} Assets
-                                    </div>
-                                </div>
-                                
-                                {/* Additional Details */}
-                                <div className="text-xs text-gray-400 w-full flex justify-between px-4 py-2 bg-base-200 rounded-lg mb-4">
-                                    <span>Joined in:</span>
-                                    <span className="font-semibold text-gray-600">
-                                        {member.joinDate ? new Date(member.joinDate).toLocaleDateString() : 'N/A'}
-                                    </span>
                                 </div>
 
-                                {/* Actions */}
-                                <div className="card-actions w-full">
-                                    <button 
-                                        onClick={() => handleRemove(member._id)}
-                                        className="btn btn-error btn-outline btn-sm w-full"
-                                    >
-                                        Remove from Team
-                                    </button>
+                                <div className="text-center space-y-1 mb-6">
+                                    <h3 className="font-black text-lg text-slate-800 line-clamp-1">{member.name}</h3>
+                                    <p className="text-xs font-medium text-slate-400 truncate w-44">{member.email}</p>
                                 </div>
+
+                                <div className="w-full grid grid-cols-2 gap-2 mb-6">
+                                    <div className="bg-slate-50 p-3 rounded-2xl text-center">
+                                        <div className="flex justify-center text-indigo-500 mb-1"><FaLayerGroup size={14}/></div>
+                                        <p className="text-[10px] uppercase font-black text-slate-400">Assets</p>
+                                        <p className="text-sm font-bold text-slate-700">{member.assetsCount}</p>
+                                    </div>
+                                    <div className="bg-slate-50 p-3 rounded-2xl text-center">
+                                        <div className="flex justify-center text-emerald-500 mb-1"><FaCalendarAlt size={14}/></div>
+                                        <p className="text-[10px] uppercase font-black text-slate-400">Joined</p>
+                                        <p className="text-sm font-bold text-slate-700">{new Date(member.joinDate).getFullYear()}</p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => handleRemove(member._id)}
+                                    className="btn btn-ghost btn-sm w-full text-slate-400 hover:text-error hover:bg-error/10 rounded-xl gap-2 transition-colors"
+                                >
+                                    <FaUser Minus size={14} />
+                                    <span className="text-[11px] font-bold uppercase tracking-wider">Remove Member</span>
+                                </button>
                             </div>
                         </div>
                     ))}
                 </div>
             )}
 
-            {/* Pagination Controls */}
-            <div className="mt-10">
+            {/* --- FOOTER / PAGINATION --- */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-100 flex justify-center shadow-sm">
                 <Pagination
                     currentPage={currentPage}
                     setCurrentPage={setCurrentPage}

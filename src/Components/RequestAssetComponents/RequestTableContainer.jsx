@@ -1,37 +1,70 @@
 import React from 'react';
 import RequestAssetRow from './RequestAssetRow';
+import { FaListUl, FaLayerGroup, FaHistory } from 'react-icons/fa';
 
 const RequestTableContainer = ({ assets, onRequest }) => {
-
-    // if (!assets || assets.length === 0) return <div className="text-center text-2xl p-10 opacity-50">No assets found.</div>;
-    console.log(assets);
-
     return (
-        <div>
-            <div>
-                <ul className="flex flex-col bg-base-100 rounded-box shadow-md border border-base-200 w-full">
+        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden">
+                
+                {/* --- HEADER BAR --- */}
+                <div className="hidden md:flex items-center gap-6 px-8 py-5 bg-slate-50/80 border-b border-slate-100">
+                    {/* SL Index */}
+                    <div className="hidden lg:block w-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                        #
+                    </div>
 
-                    <li className="flex items-center gap-4 p-4 bg-base-200 text-xs uppercase font-bold tracking-wide opacity-70 border-b border-base-300">
-                        <div className="w-8">Sl</div>
-                        <div className="w-14">Image</div>
-                        <div className="flex-1">Asset Name</div>
-                        <div className="flex-1">HR & Company</div>
-                        <div className="w-28 text-center">Type</div>
-                        <div className="w-16 text-center">Qty</div>
-                        <div className="w-16 text-center">Available</div>
-                        <div className="w-28 text-center pr-2">Actions</div>
-                    </li>
+                    {/* Image Placeholder Space */}
+                    <div className="w-16 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                        Preview
+                    </div>
 
-                    {/* --- DATA ROWS --- */}
-                    {assets.map((asset, index) => (
-                        <RequestAssetRow
-                            key={asset._id}
-                            asset={asset}
-                            index={index}
-                            onRequest={onRequest}
-                        />
-                    ))}
-                </ul>
+                    {/* Asset Details */}
+                    <div className="flex-1 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                        Asset Information
+                    </div>
+
+                    {/* Context (HR & Company) */}
+                    <div className="hidden lg:flex flex-[1.5] text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                        Affiliation & Reviewer
+                    </div>
+
+                    {/* Action Space */}
+                    <div className="w-32 text-right text-[10px] font-black uppercase text-slate-400 tracking-widest pr-4">
+                        Request
+                    </div>
+                </div>
+
+                {/* --- EMPTY STATE --- */}
+                {assets.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-24 text-slate-300">
+                        <FaLayerGroup size={48} className="mb-4 opacity-20" />
+                        <p className="font-bold text-lg">No assets match your search</p>
+                        <p className="text-sm">Try adjusting your filters or search query.</p>
+                    </div>
+                ) : (
+                    /* --- DATA ROWS --- */
+                    <ul className="flex flex-col w-full divide-y divide-slate-50">
+                        {assets.map((asset, index) => (
+                            <RequestAssetRow
+                                key={asset._id}
+                                asset={asset}
+                                index={index}
+                                onRequest={onRequest}
+                            />
+                        ))}
+                    </ul>
+                )}
+            </div>
+
+            {/* --- FOOTER INFO --- */}
+            <div className="mt-4 px-6 flex items-center justify-between text-slate-400">
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter">
+                    <FaListUl /> {assets.length} items found
+                </div>
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter">
+                    <FaHistory /> Real-time Inventory
+                </div>
             </div>
         </div>
     );

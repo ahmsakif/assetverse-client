@@ -2,32 +2,28 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import useAxios from '../../Hooks/useAxios';
-
+import { FaBox, FaCloudUploadAlt, FaExchangeAlt, FaTimes, FaCamera } from 'react-icons/fa';
+import useAxiosSecure from '../../Hooks/useAxiosSecure';
 
 const image_hosting_key = import.meta.env.VITE_IMAGE_BB_API_KEY;
 const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`;
 
 const UpdateAssetModal = ({ asset, refetch, setEditingAsset }) => {
     const [loading, setLoading] = useState(false);
-    const [addStockMode, setAddStockMode] = useState(false)
-    const axiosInstance = useAxios();
+    const [addStockMode, setAddStockMode] = useState(false);
+    const [previewImage, setPreviewImage] = useState(null);
+    const axiosSecure = useAxiosSecure();
 
     const {
         register,
         handleSubmit,
         reset,
         watch,
+        setValue,
         formState: { errors }
     } = useForm();
 
-    // useEffect(() => {
-    //     if (asset) {
-    //         setAddStockMode(false)
-    //         document.getElementById('update_modal').showModal();
-    //     }
-    // }, [asset]);
-    // Pre-fill form when 'asset' prop changes
+    // Initialize Form Data
     useEffect(() => {
         if (asset) {
             reset({
@@ -36,7 +32,8 @@ const UpdateAssetModal = ({ asset, refetch, setEditingAsset }) => {
                 productQuantity: asset.productQuantity,
                 addedQuantity: 0
             });
-            setAddStockMode(false)
+            setPreviewImage(asset.productImage);
+            setAddStockMode(false);
             document.getElementById('update_modal').showModal();
         }
     }, [asset, reset]);
@@ -46,15 +43,25 @@ const UpdateAssetModal = ({ asset, refetch, setEditingAsset }) => {
         document.getElementById('update_modal').close();
     };
 
-    const addedQty = watch("addedQuantity")
-    const existingQty = asset?.productQuantity || 0
+    // Live Math Logic
+    const addedQty = watch("addedQuantity") || 0;
+    const existingQty = asset?.productQuantity || 0;
+    const newTotal = parseInt(existingQty) + parseInt(addedQty);
+
+    // Image Preview Handler
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setPreviewImage(URL.createObjectURL(file));
+        }
+    };
 
     const onSubmit = async (data) => {
         setLoading(true);
         let finalImageUrl = asset.productImage;
 
         try {
-            // Check if a NEW image was selected
+            // 1. Image Upload (Only if changed)
             if (data.image && data.image[0]) {
                 const imageFile = { image: data.image[0] };
                 const res = await axios.post(image_hosting_api, imageFile, {
@@ -66,15 +73,15 @@ const UpdateAssetModal = ({ asset, refetch, setEditingAsset }) => {
                 }
             }
 
+            // 2. Quantity Logic
             let finalQuantity;
-
             if (addStockMode) {
-                finalQuantity = parseInt(existingQty) + parseInt(data.addedQuantity || 0);
+                finalQuantity = newTotal;
             } else {
                 finalQuantity = parseInt(data.productQuantity);
             }
 
-            // Prepare Data for Update
+            // 3. API Payload
             const updatedData = {
                 productName: data.productName,
                 productType: data.productType,
@@ -82,62 +89,104 @@ const UpdateAssetModal = ({ asset, refetch, setEditingAsset }) => {
                 productImage: finalImageUrl,
             };
 
-            // Send PATCH Request
-            const serverRes = await axiosInstance.patch(`/assets/${asset._id}`, updatedData);
+            const serverRes = await axiosSecure.patch(`/assets/${asset._id}`, updatedData);
 
             if (serverRes.data.modifiedCount > 0) {
                 refetch();
                 handleClose();
                 Swal.fire({
-                    title: 'Updated!',
-                    text: 'Asset information has been updated successfully.',
+                    title: 'Success',
+                    text: 'Inventory updated successfully.',
                     icon: 'success',
                     timer: 1500,
-                    showConfirmButton: false
+                    showConfirmButton: false,
+                    customClass: { popup: 'rounded-3xl' }
                 });
             } else {
-                // Handle case where no changes were made but request was successful
                 handleClose();
-                Swal.fire('Info', 'No changes were made.', 'info');
+                Swal.fire({ title: 'Info', text: 'No changes detected.', icon: 'info', customClass: { popup: 'rounded-3xl' } });
             }
 
         } catch (error) {
             console.error(error);
-            handleClose()
-            Swal.fire({
-                title: 'Error!',
-                text: 'Failed to update the asset.',
-                icon: 'error',
-                confirmButtonText: 'Try Again'
-            });
+            handleClose();
+            Swal.fire({ title: 'Error', text: 'Update failed.', icon: 'error', customClass: { popup: 'rounded-3xl' } });
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <dialog id="update_modal" className="modal modal-bottom sm:modal-middle">
-            <div className="modal-box bg-base-100">
-                <h3 className="font-bold text-2xl text-center text-primary mb-6">Update Asset</h3>
+        <dialog id="update_modal" className="modal modal-bottom sm:modal-middle backdrop-blur-sm">
+            <div className="modal-box max-w-4xl p-0 bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden">
+                
+                {/* --- HEADER --- */}
+                <div className="bg-slate-50 px-8 py-5 flex justify-between items-center border-b border-slate-100">
+                    <div>
+                        <h3 className="text-xl font-black text-slate-800 tracking-tight">Edit Inventory</h3>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">ID: {asset?._id?.slice(-6)}</p>
+                    </div>
+                    <button onClick={handleClose} className="btn btn-ghost btn-circle btn-sm text-slate-400 hover:text-slate-600 hover:bg-slate-200">
+                        <FaTimes size={18} />
+                    </button>
+                </div>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col md:flex-row">
                     
-                    {/* Product Name */}
-                    <div className="form-control">
-                        <label className="label"><span className="label-text font-semibold">Product Name</span></label>
-                        <input
-                            type="text"
-                            className="input input-bordered w-full"
-                            {...register("productName", { required: true })}
-                        />
+                    {/* --- LEFT COLUMN: IMAGE UPLOAD --- */}
+                    <div className="w-full md:w-2/5 bg-slate-50/50 p-8 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-100 relative">
+                        <div className="relative group w-full aspect-square max-w-[250px] bg-white rounded-3xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden shadow-sm hover:border-primary/50 transition-colors">
+                            
+                            {previewImage ? (
+                                <img src={previewImage} alt="Preview" className="w-full h-full object-contain p-4 mix-blend-multiply" />
+                            ) : (
+                                <div className="text-center p-6">
+                                    <FaBox className="mx-auto text-4xl text-slate-200 mb-2" />
+                                    <span className="text-xs text-slate-400 font-bold uppercase">No Image</span>
+                                </div>
+                            )}
+
+                            {/* Overlay Input */}
+                            <label className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 cursor-pointer flex flex-col items-center justify-center transition-all">
+                                <div className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-all flex items-center gap-2">
+                                    <FaCamera className="text-slate-700" />
+                                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">Change</span>
+                                </div>
+                                <input 
+                                    type="file" 
+                                    accept="image/*"
+                                    className="hidden" 
+                                    {...register("image")}
+                                    onChange={(e) => {
+                                        register("image").onChange(e); // Maintain hook form registration
+                                        handleImageChange(e);
+                                    }}
+                                />
+                            </label>
+                        </div>
+                        <p className="mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
+                            Click image to upload new photo
+                        </p>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        {/* Type */}
-                        <div className="form-control w-full sm:w-1/2">
-                            <label className="label"><span className="label-text font-semibold">Type</span></label>
+                    {/* --- RIGHT COLUMN: FORM DATA --- */}
+                    <div className="w-full md:w-3/5 p-8 space-y-6">
+                        
+                        {/* Name Field */}
+                        <div className="form-control">
+                            <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Asset Name</label>
+                            <input
+                                type="text"
+                                className="input input-bordered w-full rounded-2xl bg-white focus:ring-4 focus:ring-primary/10 border-slate-200 font-bold text-slate-700"
+                                {...register("productName", { required: true })}
+                            />
+                        </div>
+
+                        {/* Type Field */}
+                        <div className="form-control">
+                            <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Asset Category</label>
                             <select
-                                className="select select-bordered w-full"
+                                className="select select-bordered w-full rounded-2xl bg-white focus:ring-4 focus:ring-primary/10 border-slate-200 font-bold text-slate-700"
                                 {...register("productType", { required: true })}
                             >
                                 <option value="Returnable">Returnable</option>
@@ -145,80 +194,95 @@ const UpdateAssetModal = ({ asset, refetch, setEditingAsset }) => {
                             </select>
                         </div>
 
-                        {/* --- QUANTITY SECTION WITH TOGGLE --- */}
-                        <div className="form-control w-full sm:w-1/2">
-                            <label className="label cursor-pointer justify-start gap-2">
-                                <span className="label-text font-semibold">Quantity</span>
-                                {/* Toggle Switch */}
-                                <input 
-                                    type="checkbox" 
-                                    className="toggle toggle-xs toggle-primary" 
-                                    checked={addStockMode}
-                                    onChange={() => setAddStockMode(!addStockMode)}
-                                />
-                                <span className="label-text-alt text-primary font-bold">
-                                    {addStockMode ? 'Add Stock' : 'Edit Total'}
+                        {/* --- SMART QUANTITY LOGIC --- */}
+                        <div className="bg-indigo-50/50 p-5 rounded-3xl border border-indigo-100/50 relative overflow-hidden">
+                            {/* Toggle Header */}
+                            <div className="flex justify-between items-center mb-4">
+                                <span className="flex items-center gap-2 text-xs font-black text-indigo-400 uppercase tracking-widest">
+                                    <FaExchangeAlt /> Stock Management
                                 </span>
-                            </label>
+                                <div className="flex bg-white rounded-lg p-1 shadow-sm">
+                                    <button
+                                        type="button"
+                                        onClick={() => setAddStockMode(false)}
+                                        className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${!addStockMode ? 'bg-indigo-500 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setAddStockMode(true)}
+                                        className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${addStockMode ? 'bg-indigo-500 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}
+                                    >
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
 
                             {addStockMode ? (
-                                // OPTION A: Add More Input
-                                <div>
-                                    <div className="join w-full">
-                                        <div className="btn join-item no-animation bg-base-200 text-gray-500">
-                                            {existingQty} +
+                                // "ADD STOCK" MODE (Visual Math)
+                                <div className="flex items-end gap-3">
+                                    <div className="flex-1">
+                                        <p className="text-[10px] font-bold text-slate-400 mb-1 pl-1">Current</p>
+                                        <div className="input input-bordered flex items-center justify-center bg-white/50 text-slate-500 font-bold rounded-xl border-dashed">
+                                            {existingQty}
                                         </div>
+                                    </div>
+                                    <div className="pb-3 text-slate-400 font-black">+</div>
+                                    <div className="flex-1">
+                                        <p className="text-[10px] font-bold text-slate-400 mb-1 pl-1">Add</p>
                                         <input
                                             type="number"
-                                            placeholder="Add"
-                                            className="input input-bordered join-item w-full"
-                                            min="1"
+                                            className="input input-bordered w-full rounded-xl bg-white text-center font-bold text-slate-800 focus:border-indigo-500"
+                                            placeholder="0"
+                                            min="0"
                                             {...register("addedQuantity")} 
                                         />
                                     </div>
-                                    <div className="label">
-                                        <span className="label-text-alt">
-                                            New Total: <span className="font-bold text-success">{parseInt(existingQty) + parseInt(addedQty || 0)}</span>
-                                        </span>
+                                    <div className="pb-3 text-slate-400 font-black">=</div>
+                                    <div className="flex-1">
+                                        <p className="text-[10px] font-bold text-indigo-400 mb-1 pl-1">New Total</p>
+                                        <div className="input flex items-center justify-center bg-indigo-500 text-white font-black rounded-xl shadow-lg shadow-indigo-200">
+                                            {newTotal}
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
-                                // OPTION B: Standard Edit Input
-                                <input
-                                    type="number"
-                                    className="input input-bordered w-full"
-                                    min="0"
-                                    {...register("productQuantity", { required: !addStockMode })}
-                                />
+                                // "EDIT TOTAL" MODE
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 mb-1 pl-1 block">Set Total Quantity</label>
+                                    <input
+                                        type="number"
+                                        className="input input-bordered w-full rounded-xl bg-white font-bold text-slate-800"
+                                        min="0"
+                                        {...register("productQuantity", { required: !addStockMode })}
+                                    />
+                                </div>
                             )}
                         </div>
-                    </div>
 
-                    {/* Image Upload */}
-                    <div className="form-control">
-                        <label className="label">
-                            <span className="label-text font-semibold">Change Image (Optional)</span>
-                        </label>
-                        <input
-                            type="file"
-                            className="file-input file-input-bordered w-full"
-                            {...register("image")} 
-                        />
-                        <div className="label">
-                            <span className="label-text-alt text-gray-400">Leave empty to keep current image</span>
+                        {/* --- ACTIONS --- */}
+                        <div className="flex gap-4 pt-4">
+                            <button
+                                type="button"
+                                className="btn btn-ghost flex-1 rounded-2xl text-slate-400 font-bold uppercase tracking-widest hover:bg-slate-100"
+                                onClick={handleClose}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="btn btn-primary flex-[2] rounded-2xl gap-2 font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all"
+                                disabled={loading}
+                            >
+                                {loading ? <span className="loading loading-spinner"></span> : <><FaCloudUploadAlt size={18} /> Update Asset</>}
+                            </button>
                         </div>
-                    </div>
-
-                    {/* Buttons */}
-                    <div className="modal-action flex justify-between mt-6">
-                        <button type="button" className="btn btn-ghost" onClick={handleClose}>Cancel</button>
-                        <button type="submit" className="btn btn-primary px-8" d v isabled={loading}>
-                            {loading ? <span className="loading loading-spinner loading-xs"></span> : 'Update'}
-                        </button>
                     </div>
                 </form>
             </div>
             
+            {/* Click Outside to Close */}
             <form method="dialog" className="modal-backdrop">
                 <button onClick={handleClose}>close</button>
             </form>

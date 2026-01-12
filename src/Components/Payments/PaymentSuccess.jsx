@@ -2,19 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
 
 import Swal from 'sweetalert2';
-import useAxios from '../../Hooks/useAxios';
+import useAxiosSecure from '../../Hooks/useAxiosSecure';
+
 
 const PaymentSuccess = () => {
     const [searchParams] = useSearchParams();
     const sessionId = searchParams.get('session_id');
-    const axiosInstance = useAxios();
+    console.log('initially after load',sessionId);
+    const axiosSecure = useAxiosSecure();
     const navigate = useNavigate();
     const [isProcessing, setIsProcessing] = useState(true);
 console.log(sessionId);
     useEffect(() => {
         if (sessionId) {
+            console.log('inside',sessionId);
             // Call backend to validate and save
-            axiosInstance.post('/validate-payment', { sessionId })
+            axiosSecure.post('/validate-payment', { sessionId })
                 .then(res => {
                     if (res.data.success) {
                         Swal.fire({
@@ -33,7 +36,7 @@ console.log(sessionId);
                 })
                 .finally(() => setIsProcessing(false));
         }
-    }, [sessionId, axiosInstance, navigate]);
+    }, [sessionId, axiosSecure, navigate]);
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center">

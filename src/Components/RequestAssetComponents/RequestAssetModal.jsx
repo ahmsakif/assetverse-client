@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Swal from 'sweetalert2';
 import useAuth from '../../Hooks/useAuth';
-import useAxios from '../../Hooks/useAxios';
-
+import useAxiosSecure from '../../Hooks/useAxiosSecure';
+import { FaPaperPlane, FaTimes, FaInfoCircle, FaBuilding, FaEnvelope } from 'react-icons/fa';
 
 const RequestAssetModal = ({ asset, setAsset }) => {
-    // const { _id, productName, productImage, productType, productQuantity, dateAdded, availableQuantity } = asset;
     const { user } = useAuth();
-    const axiosInstance = useAxios();
+    const axiosSecure = useAxiosSecure();
     const [loading, setLoading] = useState(false);
 
     const {
@@ -48,26 +47,27 @@ const RequestAssetModal = ({ asset, setAsset }) => {
         };
 
         try {
-            const res = await axiosInstance.post('/requests', requestData);
+            const res = await axiosSecure.post('/requests', requestData);
 
             if (res.data.insertedId) {
                 Swal.fire({
                     title: 'Request Sent!',
-                    text: 'Your request is pending approval.',
+                    text: 'Your request is pending HR approval.',
                     icon: 'success',
                     timer: 2000,
-                    showConfirmButton: false
+                    showConfirmButton: false,
+                    customClass: { popup: 'rounded-3xl' }
                 });
                 handleClose();
             }
         } catch (error) {
             console.error(error);
-            handleClose();
             Swal.fire({
-                title: 'Error',
-                text: error.response?.data?.message || 'Failed to request asset',
+                title: 'Request Failed',
+                text: error.response?.data?.message || 'Something went wrong.',
                 icon: 'error',
-                confirmButtonText: 'Try Again'
+                confirmButtonColor: '#ef4444',
+                customClass: { popup: 'rounded-3xl' }
             });
         } finally {
             setLoading(false);
@@ -75,49 +75,84 @@ const RequestAssetModal = ({ asset, setAsset }) => {
     };
 
     return (
-        <dialog id="request_modal" className="modal modal-bottom sm:modal-middle">
-            <div className="modal-box">
-                {/* Header */}
-                <h3 className="font-bold text-lg mb-4">
-                    Requesting: <span className="text-primary">{asset?.productName}</span>
-                </h3>
-
-                {/* Form */}
-                <form onSubmit={handleSubmit(onSubmit)}>
-
-                    <div className="w-full flex items-start gap-2 mb-2">
-                        <div className='flex-1'>
-                            <img className='' src={asset?.productImage} alt="" />
+        <dialog id="request_modal" className="modal modal-bottom sm:modal-middle backdrop-blur-sm">
+            <div className="modal-box max-w-2xl p-0 overflow-hidden rounded-[2.5rem] bg-white shadow-2xl border border-slate-100">
+                
+                {/* --- TOP HEADER BAR --- */}
+                <div className="bg-slate-50 px-8 py-6 flex justify-between items-center border-b border-slate-100">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-primary/10 text-primary rounded-xl">
+                            <FaInfoCircle size={20} />
                         </div>
-                        <div className='flex-1 pt-4 text-lg'>
-                            <h2 className='border-b pb-1 mb-2 font-semibold'>Asset Information </h2>
-                            <p className=' text-black'>Company : <span className='font-bold'>{asset?.companyName}</span></p>
-                            <p className=' text-black'>HR email : <span className='font-bold'>{asset?.hrEmail}</span></p>
-                            <p className=' text-black'>Available : <span className='font-bold'>{asset?.availableQuantity}</span></p>
-                            <p className=' text-black '>Type : <span className='font-bold text-red-500'>{asset?.productType}</span></p>
-
+                        <div>
+                            <h3 className="text-xl font-black text-slate-800 tracking-tight">Confirm Request</h3>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Asset ID: {asset?._id?.slice(-8)}</p>
                         </div>
                     </div>
-                    <div className='mb-2'>
-                        <h2 className='text-lg text-black mb-1'>{asset?.productName}</h2>
-                        <p className='text-sm'>Asset ID: {asset?._id}</p>
+                    <button onClick={handleClose} className="btn btn-ghost btn-circle btn-sm text-slate-400 hover:text-slate-600">
+                        <FaTimes size={18} />
+                    </button>
+                </div>
+
+                {/* --- MODAL BODY --- */}
+                <form onSubmit={handleSubmit(onSubmit)} className="p-8">
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        {/* Image Column */}
+                        <div className="bg-slate-50 rounded-3xl p-6 flex items-center justify-center border border-slate-100/50">
+                            <img 
+                                src={asset?.productImage} 
+                                alt={asset?.productName} 
+                                className="max-h-56 object-contain mix-blend-multiply drop-shadow-xl"
+                            />
+                        </div>
+
+                        {/* Info Column */}
+                        <div className="space-y-4">
+                            <div className="pb-2 border-b border-slate-100">
+                                <h2 className="text-2xl font-black text-slate-800 line-clamp-2">{asset?.productName}</h2>
+                                <span className={`badge border-none font-bold text-[10px] uppercase mt-2 px-3 py-3 ${
+                                    asset?.productType === 'Returnable' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'
+                                }`}>
+                                    {asset?.productType} Asset
+                                </span>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3 text-slate-600">
+                                    <FaBuilding className="text-slate-300" />
+                                    <span className="text-sm font-semibold">{asset?.companyName}</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-slate-600">
+                                    <FaEnvelope className="text-slate-300" />
+                                    <span className="text-sm font-semibold truncate">{asset?.hrEmail}</span>
+                                </div>
+                            </div>
+
+                            <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100/50">
+                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Stock Status</p>
+                                <p className="text-indigo-900 font-bold">{asset?.availableQuantity} Units Available</p>
+                            </div>
+                        </div>
                     </div>
-                    <div className="form-control">
-                        <label className="label">
-                            <span className="label-text">Additional Note (Optional)</span>
+
+                    {/* --- NOTE SECTION --- */}
+                    <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
+                            Additional Request Notes
                         </label>
                         <textarea
-                            className="textarea w-full textarea-bordered h-24"
-                            placeholder="E.g. My current mouse is broken..."
+                            className="textarea w-full textarea-bordered h-28 rounded-2xl bg-slate-50 border-slate-200 focus:ring-4 focus:ring-primary/10 transition-all text-slate-700 placeholder:text-slate-300"
+                            placeholder="Briefly explain why you need this asset..."
                             {...register("note")}
                         ></textarea>
                     </div>
 
-                    {/* Actions */}
-                    <div className="modal-action">
+                    {/* --- ACTIONS --- */}
+                    <div className="flex gap-4 mt-8">
                         <button
                             type="button"
-                            className="btn"
+                            className="btn btn-ghost flex-1 rounded-2xl text-slate-400 font-bold uppercase tracking-widest hover:bg-slate-100"
                             onClick={handleClose}
                             disabled={loading}
                         >
@@ -125,10 +160,14 @@ const RequestAssetModal = ({ asset, setAsset }) => {
                         </button>
                         <button
                             type="submit"
-                            className="btn btn-primary"
+                            className="btn btn-primary flex-[2] rounded-2xl gap-3 font-black uppercase tracking-widest shadow-xl shadow-primary/20"
                             disabled={loading}
                         >
-                            {loading ? <span className="loading loading-spinner loading-xs"></span> : 'Send Request'}
+                            {loading ? (
+                                <span className="loading loading-spinner"></span>
+                            ) : (
+                                <><FaPaperPlane /> Send Request</>
+                            )}
                         </button>
                     </div>
                 </form>

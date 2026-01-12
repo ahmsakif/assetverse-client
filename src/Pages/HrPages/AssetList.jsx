@@ -1,67 +1,67 @@
 import React, { useEffect, useState } from 'react';
-import GridContainer from '../../Components/DisplayData/GridContainer';
-import TableContainer from '../../Components/DisplayData/TableContainer';
-import { FaList, FaThLarge, FaSearch } from 'react-icons/fa';
-import useAuth from '../../Hooks/useAuth';
-import useAxios from '../../Hooks/useAxios';
 import { useQuery } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
+import { FaList, FaThLarge, FaSearch, FaFilter, FaSortAmountDown, FaBoxOpen, FaLayerGroup } from 'react-icons/fa';
+
+import useAuth from '../../Hooks/useAuth';
+import useAxiosSecure from '../../Hooks/useAxiosSecure';
+import GridContainer from '../../Components/DisplayData/GridContainer';
+import TableContainer from '../../Components/DisplayData/TableContainer';
 import UpdateAssetModal from '../../Components/AssetComponents/UpdateAssetModal';
+import Pagination from '../../Utilities/Pagination';
+import SkeletonCardLoader from '../../Utilities/SkeletonCardLoader'; // Assuming you have this
 
 const AssetList = () => {
+    const { user } = useAuth();
+    const axiosSecure = useAxiosSecure();
 
-    const { user } = useAuth()
-    const axiosInstance = useAxios()
+    // UI States
+    const [viewMode, setViewMode] = useState('list');
+    const [editingAsset, setEditingAsset] = useState(null);
 
-    const [viewMode, setViewMode] = useState('list')
-    const [editingAsset, setEditingAsset] = useState(null)
-
-    const [search, setSearch] = useState('')
+    // Filter States
+    const [search, setSearch] = useState('');
     const [filterType, setFilterType] = useState('');
-    const [sortOrder, setSortOrder] = useState('')
+    const [sortOrder, setSortOrder] = useState('');
 
-    const [currentPage, setCurrentPage] = useState(0)
-    const [itemsPerPage, setItemsPerPage] = useState(10)
+    // Pagination States
+    const [currentPage, setCurrentPage] = useState(0);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
 
-    // Fetch Data
+    // 1. Fetch Data
     const {
         data: assetsData = { result: [], count: 0 },
         isLoading: assetLoading,
         refetch,
     } = useQuery({
-
         queryKey: ['assets', user?.email, search, filterType, sortOrder, currentPage, itemsPerPage],
         enabled: !!user?.email,
         queryFn: async () => {
-            const res = await axiosInstance('/assets', {
+            const res = await axiosSecure.get('/assets', {
                 params: {
                     email: user.email,
-                    search: search,
+                    search,
                     filter: filterType,
                     sort: sortOrder,
                     page: currentPage,
                     limit: itemsPerPage,
                 }
             });
-            return res.data
-        },
-        // onSuccess: () => {
-        //     if (assets.length === 0 && currentPage > 0) {
-        //         // Automatically go back to the previous page
-        //         setCurrentPage(prev => prev - 1);
-        //     }
-        // }
-    })
+            return res.data;
+        }
+    });
 
     const assets = assetsData.result;
     const totalCount = assetsData.count;
-    
+
+    // 2. Auto-pagination Logic
     useEffect(() => {
         if (!assetLoading && assets.length === 0 && currentPage > 0) {
             setCurrentPage(prev => prev - 1);
         }
     }, [assets, currentPage, assetLoading]);
 
+    // 3. Handlers
     const handleSearchChange = (e) => {
         setSearch(e.target.value);
         setCurrentPage(0);
@@ -72,52 +72,34 @@ const AssetList = () => {
         setCurrentPage(0);
     };
 
-    const handleNextPage = () => {
-        if (assets.length === itemsPerPage) {
-            setCurrentPage(prev => prev + 1);
-        }
-    };
-
-    const handlePrevPage = () => {
-        if (currentPage > 0) {
-            setCurrentPage(prev => prev - 1);
-        }
-    };
-
     const handleDelete = (id) => {
         Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Delete Asset?",
+            text: "This action cannot be undone.",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, delete it!"
+            confirmButtonColor: "#ef4444", // Red-500
+            cancelButtonColor: "#64748b", // Slate-500
+            confirmButtonText: "Yes, delete it",
+            customClass: { popup: 'rounded-3xl' }
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    //  Delete Request
-                    const res = await axiosInstance.delete(`/assets/${id}`);
-
-                    //  Check for success in the response
+                    const res = await axiosSecure.delete(`/assets/${id}`);
                     if (res.data.deletedCount) {
-                        //  Update the UI
                         refetch();
-
-                        //  Show Success Alert
                         Swal.fire({
                             title: "Deleted!",
-                            text: "Your asset has been deleted.",
-                            icon: "success"
+                            text: "Asset removed from inventory.",
+                            icon: "success",
+                            timer: 1500,
+                            showConfirmButton: false,
+                            customClass: { popup: 'rounded-3xl' }
                         });
                     }
                 } catch (error) {
                     console.error(error);
-                    Swal.fire({
-                        title: "Error!",
-                        text: "Failed to delete the asset.",
-                        icon: "error"
-                    });
+                    Swal.fire({ title: "Error", text: "Failed to delete.", icon: "error" });
                 }
             }
         });
@@ -125,112 +107,143 @@ const AssetList = () => {
 
     const openEditModal = (asset) => {
         setEditingAsset(asset);
-        // document.getElementById('update_modal').showModal();
     };
 
     return (
-        <div>
+        <div className="space-y-8 animate-in fade-in duration-700">
+            <title>Inventory | AssetVerse</title>
 
-            <div className='flex justify-between items-center mb-10'>
-                <div>
-                    <h2 className="text-4xl font-bold text-primary">Asset List</h2>
-                    <p className="text text-gray-500">Manage your company inventory</p>
+            {/* --- TOP HEADER SECTION --- */}
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+                <div className="space-y-1">
+                    <h2 className="text-3xl font-bold text-slate-800 tracking-tight">Company Inventory</h2>
+                    <p className="text-slate-500 font-medium">Manage stock, track assets, and update product details.</p>
                 </div>
-                {/* View Toggle */}
-                <div className='join border rounded-md border-base-300'>
+
+                {/* --- VIEW TOGGLE --- */}
+                <div className="bg-slate-50 p-1 rounded-2xl border border-slate-200 flex gap-1">
                     <button
-                        className={`btn btn-sm rounded-l-[5px]  join-item ${viewMode === 'list' ? 'btn-active btn-primary' : 'btn-ghost'}`}
-                        onClick={() => setViewMode('list')}
-                    > <FaList /> </button>
-                    <button
-                        className={`btn btn-sm rounded-r-[5px] join-item ${viewMode === 'grid' ? 'btn-active btn-primary' : 'btn-ghost'}`}
                         onClick={() => setViewMode('grid')}
-                    > <FaThLarge /> </button>
+                        className={`btn btn-sm h-10 px-5 rounded-xl border-none gap-2 transition-all duration-300 ${viewMode === 'grid' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-transparent text-slate-400 hover:bg-slate-200'}`}
+                    >
+                        <FaThLarge /> <span className="text-[10px] font-black uppercase tracking-widest">Grid</span>
+                    </button>
+                    <button
+                        onClick={() => setViewMode('list')}
+                        className={`btn btn-sm h-10 px-5 rounded-xl border-none gap-2 transition-all duration-300 ${viewMode === 'list' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-transparent text-slate-400 hover:bg-slate-200'}`}
+                    >
+                        <FaList /> <span className="text-[10px] font-black uppercase tracking-widest">List</span>
+                    </button>
                 </div>
             </div>
 
             {/* --- FILTERS BAR --- */}
-            <div className="bg-base-200 p-4 rounded-xl mb-6 flex flex-col md:flex-row gap-4 items-center shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-white/50 backdrop-blur-md rounded-3xl border border-slate-100 shadow-sm">
+                
+                {/* Search Field */}
+                <div className="relative group lg:col-span-1">
+                    <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+                    <input 
+                        type="search" 
+                        placeholder="Search assets..." 
+                        className="input input-bordered w-full pl-12 rounded-2xl bg-white border-slate-200 focus:ring-4 focus:ring-primary/10 transition-all"
+                        onChange={handleSearchChange} 
+                        value={search} 
+                    />
+                </div>
 
-                {/* Search */}
-                <label
-                    className="input w-full md:w-2/5 ">
-                    <svg className="h-[1.2em] opacity-80" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <g
-                            strokeLinejoin="round"
-                            strokeLinecap="round"
-                            strokeWidth="2.5"
-                            fill="none"
-                            stroke="currentColor"
-                        >
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <path d="m21 21-4.3-4.3"></path>
-                        </g>
-                    </svg>
-                    <input type="search" required placeholder="Search assets..." onChange={handleSearchChange} value={search} />
-                </label>
+                {/* Filter Category */}
+                <div className="relative group">
+                    <FaFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors pointer-events-none" />
+                    <select
+                        className="select select-bordered w-full pl-12 rounded-2xl bg-white border-slate-200 focus:ring-4 focus:ring-primary/10 appearance-none"
+                        onChange={handleFilterChange}
+                        value={filterType}
+                    >
+                        <option value="">All Categories</option>
+                        <option value="Returnable">Returnable</option>
+                        <option value="Non-returnable">Non-returnable</option>
+                    </select>
+                </div>
 
-                {/* Filter Type */}
-                <select
-                    className="select select-bordered w-full md:w-1/5"
-                    onChange={handleFilterChange}
-                    value={filterType}
-                >
-                    <option value="">All Types</option>
-                    <option value="Returnable">Returnable</option>
-                    <option value="Non-returnable">Non-returnable</option>
-                </select>
+                {/* Sort Logic */}
+                <div className="relative group">
+                    <FaSortAmountDown className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors pointer-events-none" />
+                    <select
+                        className="select select-bordered w-full pl-12 rounded-2xl bg-white border-slate-200 focus:ring-4 focus:ring-primary/10 appearance-none"
+                        onChange={(e) => setSortOrder(e.target.value)}
+                        value={sortOrder}
+                    >
+                        <option value="">Sort: Quantity</option>
+                        <option value="asc">Stock: Low to High</option>
+                        <option value="desc">Stock: High to Low</option>
+                    </select>
+                </div>
 
-                {/* Sort */}
-                <select
-                    className="select select-bordered w-full md:w-1/5"
-                    onChange={(e) => setSortOrder(e.target.value)}
-                    value={sortOrder}
-                >
-                    <option value="">Sort by Quantity</option>
-                    <option value="asc">Low to High</option>
-                    <option value="desc">High to Low</option>
-                </select>
-
-                {/* Items Per Page */}
-                <select
-                    className="select select-bordered w-full md:w-1/5"
-                    onChange={(e) => {
-                        setItemsPerPage(Number(e.target.value))
-                        setCurrentPage(0)
-                    }}
-                >
-                    <option value={10}>10 per page</option>
-                    <option value={20}>20 per page</option>
-                    <option value={50}>50 per page</option>
-                </select>
+                {/* Items Control */}
+                <div className="relative group">
+                    <select
+                        className="select select-bordered w-full rounded-2xl bg-white border-slate-200 focus:ring-4 focus:ring-primary/10"
+                        onChange={(e) => {
+                            setItemsPerPage(Number(e.target.value));
+                            setCurrentPage(0);
+                        }}
+                        value={itemsPerPage}
+                    >
+                        <option value={10}>10 Per Page</option>
+                        <option value={20}>20 Per Page</option>
+                        <option value={50}>50 Per Page</option>
+                    </select>
+                </div>
             </div>
 
-            {/* Content Section */}
-            {
-                viewMode === 'grid' ? (
-                    <GridContainer assets={assets} onDelete={handleDelete} onUpdate={openEditModal} />
+            {/* --- CONTENT SECTION --- */}
+            <div className="min-h-[500px]">
+                {assetLoading ? (
+                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {/* Assuming SkeletonCardLoader handles card shapes, usually you map it */}
+                        {[...Array(itemsPerPage)].map((_, i) => <SkeletonCardLoader key={i} />)}
+                     </div>
+                ) : assets.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[2rem] border-2 border-dashed border-slate-200 shadow-inner">
+                        <div className="bg-slate-50 p-6 rounded-full mb-4">
+                            <FaBoxOpen className="text-5xl text-slate-200" />
+                        </div>
+                        <h3 className="text-xl font-black text-slate-700">No inventory found</h3>
+                        <p className="text-slate-400 font-medium">Try adding a new asset or changing your filters.</p>
+                    </div>
                 ) : (
-                    <TableContainer assets={assets} onDelete={handleDelete} onUpdate={openEditModal} />
-                )
-            }
+                    <>
+                        {viewMode === 'grid' ? (
+                            <GridContainer assets={assets} onDelete={handleDelete} onUpdate={openEditModal} />
+                        ) : (
+                            <TableContainer assets={assets} onDelete={handleDelete} onUpdate={openEditModal} />
+                        )}
+                    </>
+                )}
+            </div>
 
-            {/* Empty State */}
-            {assets.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-16 bg-base-100 border-2 border-dashed border-base-300 rounded-xl mt-4">
-                    <h3 className="text-lg font-bold text-gray-500">No Assets Found</h3>
-                    <p className="text-gray-400">Try adjusting your search or add a new asset.</p>
+            {/* --- PAGINATION --- */}
+            {totalCount > 0 && (
+                <div className="bg-white p-4 rounded-3xl border border-slate-100 flex justify-center shadow-sm">
+                    <Pagination
+                        currentPage={currentPage}
+                        setCurrentPage={setCurrentPage}
+                        itemsPerPage={itemsPerPage}
+                        totalCount={totalCount}
+                        setItemsPerPage={setItemsPerPage} // If your pagination component supports this
+                    />
                 </div>
             )}
-            {
-                editingAsset && (
-                    <UpdateAssetModal
-                        asset={editingAsset}
-                        refetch={refetch}
-                        setEditingAsset={setEditingAsset}
-                    />
-                )
-            }
+
+            {/* --- UPDATE MODAL --- */}
+            {editingAsset && (
+                <UpdateAssetModal
+                    asset={editingAsset}
+                    refetch={refetch}
+                    setEditingAsset={setEditingAsset}
+                />
+            )}
         </div>
     );
 };

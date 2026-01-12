@@ -1,9 +1,7 @@
 import React from 'react';
-// import logo from '../../assets/better-tomorrow-logo.png'
-import { FaFacebook, FaInstagram, FaLinkedinIn } from 'react-icons/fa';
-import { IoLogoGithub } from 'react-icons/io';
+import { FaFacebook, FaInstagram, FaLinkedinIn, FaGithub } from 'react-icons/fa';
 import { MdKeyboardDoubleArrowUp } from "react-icons/md";
-import { Link } from 'react-router';
+import { Link } from 'react-router'; 
 import LogoFull from '../../Logo/LogoFull';
 
 const Footer = () => {
@@ -13,87 +11,82 @@ const Footer = () => {
     };
 
     return (
-        <div className='relative bg-linear-to-b from-blue-900 to-blue-950 border-t-2 border-white/40  py-20'>
-            <div className='md:flex max-w-9xl mx-auto px-4 gap-20 '>
-                {/* left */}
-                <div className='flex-1 '>
-                    <div className='flex items-center gap-6 mb-6'>
-                        <LogoFull></LogoFull>
-                        <h2 className='text-white font-semibold text-3xl bg-g fro '>AssetVerse</h2>
+        <footer className="relative bg-slate-950 border-t border-slate-900 pt-20 pb-10">
+            <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+                
+                {/* --- BRAND COLUMN --- */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="flex items-center gap-3">
+                        {/* Ensure LogoFull can take a fill class or wrap it */}
+                        <div className="brightness-0 invert opacity-90"> 
+                            <LogoFull className="h-8 w-auto" />
+                        </div>
+                        <h2 className="text-white font-black text-2xl tracking-tighter">AssetVerse</h2>
                     </div>
-                    <p className=' text-gray-100 mb-4'>Simplifying asset tracking for modern teams. We help businesses manage equipment, track assignments, and reduce loss with one intuitive platform</p>
+                    
+                    <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+                        Simplifying asset tracking for modern teams. We help businesses manage equipment, track assignments, and reduce loss with one intuitive platform.
+                    </p>
 
-                    <div className='flex gap-5 p-4 mb-2' >
-                        <a
-                            href="https://www.instagram.com/_ddhrubb_/"
-                            target='_blank'
-                            className=' group flex items-center space-x-2 transition-all '>
-
-                            <div className=' hover:bg-linear-to-r from-primary to-secondary p-3 hover:text-white rounded-full transition-transform text-gray-400 duration-300 group-hover:scale-125 ' >
-                                <FaInstagram className='' />
-                            </div>
-                        </a>
-                        <a
-                            href="https://www.facebook.com/ahm.sakif24/"
-                            target='_blank'
-                            className=' group flex items-center space-x-2 transition-all '>
-
-                            <div className='text-gray-400 hover:bg-linear-to-r from-primary to-secondary p-3 hover:text-white rounded-full transition-transform duration-300 group-hover:scale-125 ' >
-                                <FaFacebook />
-                            </div>
-                        </a>
-                        <a
-                            href="https://www.linkedin.com/in/sakif-ahmed-9b50881a9/"
-                            target='_blank'
-                            className=' group flex items-center space-x-2 transition-all '>
-
-                            <div className='text-gray-400 hover:bg-linear-to-r from-primary to-secondary p-3 hover:text-white rounded-full transition-transform duration-300 group-hover:scale-125 ' >
-                                <FaLinkedinIn />
-                            </div>
-                        </a>
-                        <a
-                            href="https://github.com/bitvotion"
-                            target='_blank'
-                            className=' group flex items-center space-x-2 transition-all '>
-
-                            <div className='text-gray-400 hover:bg-linear-to-r from-primary to-secondary p-3 hover:text-white rounded-full transition-transform duration-300 group-hover:scale-125 ' >
-                                <IoLogoGithub />
-                            </div>
-                        </a>
-                    </div>
-                    <div>
-                        <button onClick={scrollToTop} className='btn bg-transparent border-primary text-primary hover:bg-primary hover:text-primary-content active:translate-y-0.5 '> <MdKeyboardDoubleArrowUp className='text-xl' />   Back To Top</button>
+                    {/* Socials */}
+                    <div className="flex gap-4">
+                        <SocialLink href="https://github.com/bitvotion" icon={<FaGithub />} />
+                        <SocialLink href="https://www.linkedin.com/in/sakif-ahmed-9b50881a9/" icon={<FaLinkedinIn />} />
+                        <SocialLink href="https://www.instagram.com/_ddhrubb_/" icon={<FaInstagram />} />
+                        <SocialLink href="https://www.facebook.com/ahm.sakif24/" icon={<FaFacebook />} />
                     </div>
                 </div>
-                {/* Right */}
-                <div className='flex-1 flex mt-5 md:0 text-gray-300'>
-                    <div className='flex-1'>
-                        <h2 className=' text-2xl font-medium text-gray-200 mb-6'>Resources</h2>
-                        <ul className='*:mb-2 text-gray-400 *:hover:text-gray-300 *:hover:underline'>
-                            <li><Link to='/'>Content Library</Link></li>
-                            <li><Link to='/about'>About</Link></li>
-                            <li><Link to='/events'>Events</Link></li>
-                            <li><Link to='/gallery' >Gallery</Link></li>
-                            <li><Link to='/blogs' >Blogs</Link></li>
-                            <li><Link>Contact</Link></li>
-                            <li><Link>Portal</Link></li>
-                        </ul>
-                    </div>
-                    <div className='flex-1'>
-                        <h2 className=' text-2xl font-medium text-gray-200 mb-6'>Legal</h2>
-                        <ul className='*:mb-2 text-gray-400 *:hover:text-gray-300 *:hover:underline'>
-                            <li><Link>Privacy</Link></li>
-                            <li><Link>Terms of Services</Link></li>
-                            <li><Link>Lawyer's Corners</Link></li>
-                        </ul>
-                    </div>
+
+                {/* --- LINKS COLUMN 1 --- */}
+                <div>
+                    <h3 className="text-white font-bold mb-6">Product</h3>
+                    <ul className="space-y-4 text-sm text-slate-400">
+                        <li><Link to="/features" className="hover:text-white transition-colors">Features</Link></li>
+                        <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
+                        <li><Link to="/join-employee" className="hover:text-white transition-colors">For Employees</Link></li>
+                        <li><Link to="/join-hr" className="hover:text-white transition-colors">For HR Managers</Link></li>
+                    </ul>
+                </div>
+
+                {/* --- LINKS COLUMN 2 --- */}
+                <div>
+                    <h3 className="text-white font-bold mb-6">Company</h3>
+                    <ul className="space-y-4 text-sm text-slate-400">
+                        <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
+                        <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+                        <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                        <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                    </ul>
                 </div>
             </div>
-            <div className='absolute bottom-0 w-full bg-gray-950 py-1'>
-                <p className='text-gray-200 text-center'> &copy; AssetVerse 2025</p>
+
+            {/* --- BOTTOM BAR --- */}
+            <div className="max-w-7xl mx-auto px-6 border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p className="text-slate-500 text-xs font-medium">
+                    &copy; {new Date().getFullYear()} AssetVerse Inc. All rights reserved.
+                </p>
+                
+                <button 
+                    onClick={scrollToTop} 
+                    className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-widest"
+                >
+                    Back to Top <MdKeyboardDoubleArrowUp size={16} />
+                </button>
             </div>
-        </div>
+        </footer>
     );
 };
+
+// Helper Component for Social Icons
+const SocialLink = ({ href, icon }) => (
+    <a 
+        href={href} 
+        target="_blank" 
+        rel="noreferrer" 
+        className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-slate-400 hover:bg-white hover:text-slate-950 transition-all duration-300"
+    >
+        {icon}
+    </a>
+);
 
 export default Footer;

@@ -1,349 +1,300 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import useAuth from '../../Hooks/useAuth';
 import { useForm } from 'react-hook-form';
-import { motion } from "framer-motion";
-import { FaCalendarAlt, FaCheck, FaChevronLeft, FaChevronRight, FaEye, FaEyeSlash, FaRegEnvelope, FaTimes } from 'react-icons/fa';
+import { FaArrowRight, FaArrowLeft, FaCheck, FaUserTie, FaIdCard, FaTimes } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
+import axios from 'axios';
+
+import useAuth from '../../Hooks/useAuth';
+import useAxios from '../../Hooks/useAxios';
+import { handleFirebaseError } from '../../Utilities/handleFirebaseError';
+
+// Icons
 import EmailIcon from '../../Components/Icons/EmailIcon';
 import PasswordIcon from '../../Components/Icons/PasswordIcon';
 import ProfileIcon from '../../Components/Icons/ProfileIcon';
-import CompanyNameIcon from '../../Components/Icons/CompanyNameIcon';
-import SlideLeft from '../../Components/Animation/SlideLeft';
-import axios from 'axios';
-import toast from 'react-hot-toast';
-import useAxios from '../../Hooks/useAxios';
-import Logo from '../../Components/Logo/Logo';
-import { handleFirebaseError } from '../../Utilities/handleFirebaseError';
 
 const image_hosting_key = import.meta.env.VITE_IMAGE_BB_API_KEY;
 const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`;
 
 const JoinEmployee = () => {
-    const [currentStep, setCurrentStep] = useState(0)
-    const navigate = useNavigate()
-    const { createUser, updateUserProfile, setLoading } = useAuth()
-    const [showPwd, setShowPwd] = useState(false)
-    const [showPasswordRules, setShowPasswordRules] = useState(false)
-    const [showStepIndicator, setShowStepIndicator] = useState(false)
-    const [submittedStep, setSubmittedStep] = useState(null);
-    const axiosInstance = useAxios()
+    const [currentStep, setCurrentStep] = useState(0);
+    const [showPasswordRules, setShowPasswordRules] = useState(false);
+    const navigate = useNavigate();
+    const { createUser, updateUserProfile, setLoading } = useAuth();
+    const axiosInstance = useAxios();
 
     const {
         register,
-        reset,
         handleSubmit,
-        watch,
         trigger,
+        watch,
+        reset,
         formState: { errors }
     } = useForm({
         defaultValues: {
             email: "",
             password: "",
             fullName: "",
-            companyName: ""
         }
-    })
-    useEffect(() => {
-        reset({
-            email: "",
-            password: "",
-            fullName: "",
-            companyName: "",
-            // clear other fields if needed
-        });
-    }, [reset])
+    });
 
-
+    // --- PASSWORD LOGIC ---
     const password = watch("password", "");
+    const requirements = [
+        { label: "6+ Chars", valid: password.length >= 6 },
+        { label: "Uppercase", valid: /[A-Z]/.test(password) },
+        { label: "Lowercase", valid: /[a-z]/.test(password) },
+        { label: "Number", valid: /[0-9]/.test(password) },
+    ];
 
     const steps = [
-        { fields: ["email", "password"], title: "Account Credentials" },
-        { fields: ["fullName", "dateOfBirth"], title: "Personal Details" },
-    ]
-    const requirements = [
-        { label: "At least 6 characters", valid: password.length >= 6 },
-        { label: "Contains an uppercase letter", valid: /[A-Z]/.test(password) },
-        { label: "Contains a lowercase letter", valid: /[a-z]/.test(password) },
-        { label: "Contains a number", valid: /[0-9]/.test(password) },
-    ]
+        { id: 0, title: "Credentials", icon: <FaUserTie /> },
+        { id: 1, title: "Personal Info", icon: <FaIdCard /> },
+    ];
 
-    const handleHrRegistration = async (data) => {
-        if (currentStep !== steps.length - 1) return;
-
-        const toastId = toast.loading("Creating your personal workspace...")
-        try {
-            // Upload images to ImgBB
-            const userPhoto = { image: data.userPhoto[0] }
-            const userPhotoRes = await axios.post(image_hosting_api, userPhoto, {
-                headers: { 'content-type': 'multipart/form-data' }
-            })
-            const userPhotoURL = userPhotoRes.data.data.display_url
-
-
-            // Firebase Registration
-            await createUser(data.email, data.password)
-                .then(async () => {
-                    await updateUserProfile(data.fullName, userPhotoURL)
-                        .then(async () => {
-                            const userData = {
-                                name: data.fullName,
-                                email: data.email,
-                                role: "employee",
-                                dateOfBirth: data.dateOfBirth,
-                                userPhoto: userPhotoURL,
-                            }
-                            // Save data in MongoDB
-                            const res = await axiosInstance.post('/users', userData)
-                            if (res.data.insertedId) {
-                                toast.success("Employee Account Created! Login Now", { id: toastId });
-                                reset()
-                                setCurrentStep(0)
-                                navigate('/login')
-                            }
-                        })
-                })
-            setLoading(false)
-            // console.log('user photo url', userPhotoURL);
-        }
-        catch (error) {
-            // console.error(error);
-            setLoading(false)
-            handleFirebaseError(error.code, toastId)
-        }
-        // console.log(data)
-    }
-
+    // --- NAVIGATION ---
     const handleNextStep = async () => {
-        const isValid = await trigger(steps[currentStep].fields)
-        if (isValid) {
-            setSubmittedStep(null);
-            setCurrentStep((prev) => prev + 1)
-        } else {
-            setSubmittedStep(currentStep)
-        }
-        console.log(currentStep);
-    }
+        const fields = [
+            ["email", "password"],
+            ["fullName", "dateOfBirth", "userPhoto"],
+        ];
+        const isValid = await trigger(fields[currentStep]);
+        if (isValid) setCurrentStep((prev) => prev + 1);
+    };
 
-    const handlePrevStep = () => {
-        setCurrentStep((prev) => prev - 1)
-    }
+    const handlePrevStep = () => setCurrentStep((prev) => prev - 1);
+
+    // --- SUBMISSION ---
+    const handleEmployeeRegistration = async (data) => {
+        const toastId = toast.loading("Creating your employee profile...");
+        try {
+            // Upload Image
+            const uploadImage = async (file) => {
+                const formData = new FormData();
+                formData.append('image', file[0]);
+                const res = await axios.post(image_hosting_api, formData);
+                return res.data.data.display_url;
+            };
+
+            const userPhotoURL = await uploadImage(data.userPhoto);
+
+            // Create Firebase User
+            await createUser(data.email, data.password);
+            await updateUserProfile(data.fullName, userPhotoURL);
+
+            // Save to DB
+            const userData = {
+                name: data.fullName,
+                email: data.email,
+                role: "employee",
+                dateOfBirth: data.dateOfBirth,
+                userPhoto: userPhotoURL,
+            };
+
+            const res = await axiosInstance.post('/users', userData);
+            if (res.data.insertedId) {
+                toast.success("Profile created! Please login.", { id: toastId });
+                reset();
+                navigate('/login');
+            }
+        } catch (error) {
+            setLoading(false);
+            handleFirebaseError(error.code, toastId);
+        }
+    };
 
     return (
-        <div className='relative min-h-screen bg-base-200/10 lg:rounded-r-[100px] w-full lg:w-1/2 flex items-center'>
-            <Logo></Logo>
-            <div className=' card w-full overflow-hidden flex flex-col justify-center items-center '>
+        <div className="w-full lg:w-1/2 flex flex-col items-center justify-center bg-white min-h-screen lg:rounded-r-[80px] relative z-10 shadow-2xl animate-in slide-in-from-left duration-700">
+            <div className="w-full max-w-[500px] px-8 py-12 border-4 border-slate-500/10 shadow-xl rounded-4xl">
+                
+                {/* Header */}
+                <div className="mb-8 text-center">
+                    <h1 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Join as Employee</h1>
+                    <p className="text-slate-500 font-medium text-sm">Create your account to access company assets.</p>
+                </div>
 
-
-                <form
-                    onSubmit={handleSubmit(handleHrRegistration)}
-                    onKeyDown={e => {
-                        if (e.key === "Enter" && currentStep < steps.length - 1) {
-                            e.preventDefault()
-                            handleNextStep()
-                        }
-                    }}
-                    className='relative card-body max-w-md border pt-10 rounded-xl border-gray-200 shadow-r-lg w-full justify-center overflow-hidden bg-blue-100/90'>
-                    {
-                        showStepIndicator && <div className=' absolute top-0 left-0  h-1 w-full bg-gray-200 rounded-full overflow-hidden '>
-                            <div className={`absolute left-0 top-0 h-full bg-primary transition-all duration-500 
-                                ${currentStep === 0
-                                    ? 'w-1/2'
-                                    : 'w-full'
-                                }
-                                `}
-                            >
-
+                {/* Progress Bar (2 Steps) */}
+                <div className="flex justify-center items-center mb-10 relative max-w-xs mx-auto">
+                    <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 -z-10 rounded-full"></div>
+                    <div 
+                        className="absolute top-1/2 left-0 h-1 bg-primary -z-0 rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+                    ></div>
+                    
+                    <div className="w-full flex justify-between">
+                        {steps.map((step, index) => (
+                            <div key={index} className={`flex flex-col items-center gap-2 bg-white px-2`}>
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                                    index <= currentStep ? 'border-primary bg-primary text-white shadow-lg' : 'border-slate-200 text-slate-300'
+                                }`}>
+                                    {index < currentStep ? <FaCheck size={12}/> : <span className="text-sm font-bold">{index + 1}</span>}
+                                </div>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${index <= currentStep ? 'text-primary' : 'text-slate-300'}`}>
+                                    {step.title}
+                                </span>
                             </div>
-                        </div>
-                    }
-
-                    <div className="mb-8 text-center">
-                        <h1 className="text-2xl font-semibold text-base-content">
-                            Create Employee Account
-                        </h1>
-                        <p className="mt-1 text-sm text-gray-500">
-                            Set up your employee profile and access company resources.
-                        </p>
+                        ))}
                     </div>
+                </div>
 
-                    {/* Step Indicator */}
-
-
-                    {/* Animated Form Content */}
-
-
-
-                    {/* Step 1 */}
-                    {
-                        currentStep === 0 && (
-                            <SlideLeft>
-                                <div>
-                                    <h2 className='text-lg mb-3 font-semibold'>{steps[0].title}</h2>
-                                    {/* Email Input */}
-                                    <div className='form-control mb-3'>
-                                        <label className='label text-gray-800 mb-1'><span className='label-text'>Email</span></label>
-                                        <div
-                                            onFocus={() => setShowStepIndicator(true)}
-                                            className='input w-full input-bordered validator'>
-                                            <EmailIcon />
-                                            <input type="email" placeholder='personal@email.com' className=''
-                                                {...register("email", {
-                                                    required: "Email is required",
-                                                    pattern: {
-                                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                                        message: "Invalid email address"
-                                                    }
-                                                })} />
-                                        </div>
-                                        {errors.email && <span className='text-red-500 text-sm mt-2'>{errors.email.message}</span>}
-                                    </div>
-                                    {/* Password Input */}
-                                    <div className='form-control'>
-                                        <label className="label mb-1"><span className='label-text text-gray-800 '>Password</span></label>
-                                        <div
-                                            onChange={() => {
-                                                setShowPasswordRules(true)
-                                                setShowStepIndicator(true)
-                                            }}
-                                            // onBlur={() => setShowPasswordRules(false)}
-                                            className='input w-full input-bordered validator'
-                                        >
-                                            <PasswordIcon />
-                                            {
-                                                showPwd
-                                                    ? <FaEye onClick={() => setShowPwd(!showPwd)} className='absolute right-2.5 cursor-default text-lg text-gray-600 h-full ' />
-                                                    :
-                                                    <FaEyeSlash onClick={() => setShowPwd(!showPwd)} className='absolute right-2.5 cursor-default text-lg text-gray-600 h-full' />
-                                            }
-                                            <input
-                                                type={`${showPwd ? 'text' : 'password'}`}
-                                                placeholder='Create a password'
-                                                {...register("password",
-                                                    {
-                                                        required: "Password is required",
-                                                        validate: {
-                                                            length: (val) => val.length >= 6 || "Must be at least 6 characters",
-                                                            upper: (val) => /[A-Z]/.test(val) || "Need uppercase letter",
-                                                            lower: (val) => /[a-z]/.test(val) || "Need lowercase letter",
-                                                            number: (val) => /[0-9]/.test(val) || "Need a number"
-                                                        }
-                                                    }
-                                                )} />
-                                        </div>
-                                        {errors.password && <span className='text-red-500 text-sm'>{errors.password.message}</span>}
-                                    </div>
-                                    {/* Validation checklist */}
-                                    {
-                                        showPasswordRules && (
-                                            <div className='mt-4'>
-                                                <p className='font-semibold mb-2 text-gray-500 text-xs uppercase tracking-wide'>Password must contain:</p>
-                                                <div className='space-y-1'>
-                                                    {
-                                                        requirements.map((req, index) => (
-                                                            <div
-                                                                key={index}
-                                                                className={`flex items-center gap-2 transition-all duration-300 ${req.valid ? 'text-blue-600' : 'text-gray-400'}`}
-                                                            >
-                                                                {
-                                                                    req.valid ? <FaCheck className='text-xs'></FaCheck> : <FaTimes className='text-xs'></FaTimes>
-                                                                }
-                                                                <span className={req.valid ? 'line-through opacity-70' : ''}>
-                                                                    {
-                                                                        req.label
-                                                                    }
-                                                                </span>
-                                                            </div>
-                                                        ))
-                                                    }
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-                                </div>
-                            </SlideLeft>
-                        )
-                    }
-
-                    {/* Step-2 */}
-                    {currentStep === 1 && (
-                        <SlideLeft>
-                            <div>
-                                <h2 className='text-lg mb-3 font-semibold'>{steps[1].title}</h2>
-                                {/* Name Input */}
-                                <div className='form-control mb-3 '>
-                                    <label className='label mb-1'><span className='label-text text-gray-800 '>Full Name</span></label>
-                                    <div className='input w-full input-bordered'>
-                                        <ProfileIcon />
-                                        <input type="text" placeholder='Full Name' className=''
-                                            {...register("fullName", { required: "Name is required" })} />
-                                    </div>
-                                    {submittedStep === 1 && errors.fullName && <span className='text-red-500 text-sm'>{errors.fullName.message}</span>}
-                                </div>
-                                {/* DOB Input */}
+                <form onSubmit={handleSubmit(handleEmployeeRegistration)} className="min-h-[400px] flex flex-col">
+                    <AnimatePresence mode='wait'>
+                        
+                        {/* --- STEP 1: CREDENTIALS --- */}
+                        {currentStep === 0 && (
+                            <motion.div 
+                                key="step1"
+                                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                                className="space-y-5 flex-1"
+                            >
                                 <div className="form-control">
-                                    <label className="label mb-1">
-                                        <span className="label-text text-gray-800 ">Date of Birth</span>
-                                    </label>
-
-                                    <div className="input input-bordered w-full flex items-center gap-2 mb-3">
-                                        <FaCalendarAlt className="text-gray-400" />
-
-                                        <input
-                                            type="date"
-                                            {...register("dateOfBirth", { required: "Date of Birth is required" })}
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Email Address</label>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><EmailIcon /></div>
+                                        <input 
+                                            type="email" 
+                                            className="input w-full pl-12 h-14 bg-slate-50 border-slate-200 focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl font-bold text-slate-700"
+                                            placeholder="you@company.com"
+                                            {...register("email", { required: "Email is required" })}
                                         />
                                     </div>
-
-                                    {submittedStep === 1 && errors.dateOfBirth && (
-                                        <span className="text-red-500 text-sm">
-                                            {errors.dateOfBirth.message}
-                                        </span>
-                                    )}
+                                    {errors.email && <span className="text-rose-500 text-xs font-bold ml-1 mt-1">{errors.email.message}</span>}
                                 </div>
-                                {/* Profile Photo */}
-                                <div className='form-control'>
-                                    <label className="label mb-1"><span className='label-text text-gray-800 '>Your Photo</span></label>
-                                    <div>
-                                        <input type="file" placeholder='your company logo' className='file-input file-input-bordered w-full'
-                                            {...register("userPhoto", { required: "Profile Photo is required" })} />
+
+                                <div className="form-control">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Password</label>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><PasswordIcon /></div>
+                                        <input 
+                                            type="password" 
+                                            className="input w-full pl-12 h-14 bg-slate-50 border-slate-200 focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl font-bold text-slate-700"
+                                            placeholder="••••••••"
+                                            onFocus={() => setShowPasswordRules(true)}
+                                            {...register("password", { 
+                                                required: "Password is required", 
+                                                validate: {
+                                                    length: (val) => val.length >= 6 || "Too short",
+                                                    upper: (val) => /[A-Z]/.test(val) || "Missing uppercase",
+                                                    lower: (val) => /[a-z]/.test(val) || "Missing lowercase",
+                                                    number: (val) => /[0-9]/.test(val) || "Missing number"
+                                                }
+                                            })}
+                                        />
                                     </div>
-                                    {submittedStep === 1 && errors.userPhoto && <span className='text-red-500 text-sm'>{errors.userPhoto.message}</span>}
+                                    {errors.password && <span className="text-rose-500 text-xs font-bold ml-1 mt-1">{errors.password.message}</span>}
                                 </div>
-                            </div>
-                        </SlideLeft>
-                    )}
 
+                                {/* Password Rules Animation */}
+                                <AnimatePresence>
+                                    {showPasswordRules && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="grid grid-cols-2 gap-2 bg-slate-50 p-4 rounded-2xl border border-slate-100 mt-2">
+                                                {requirements.map((req, index) => (
+                                                    <div key={index} className={`flex items-center gap-2 text-xs font-bold transition-colors duration-300 ${req.valid ? 'text-emerald-500' : 'text-slate-400'}`}>
+                                                        <div className={`w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${req.valid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 text-transparent'}`}>
+                                                            <FaCheck size={8} />
+                                                        </div>
+                                                        {req.label}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </motion.div>
+                        )}
 
-                    {/* Navigation Buttons */}
-                    <div className='card-actions justify-between mt-6'>
+                        {/* --- STEP 2: PERSONAL INFO --- */}
+                        {currentStep === 1 && (
+                            <motion.div 
+                                key="step2"
+                                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                                className="space-y-5 flex-1"
+                            >
+                                <div className="form-control">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Full Name</label>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><ProfileIcon /></div>
+                                        <input 
+                                            type="text" 
+                                            className="input w-full pl-12 h-14 bg-slate-50 border-slate-200 focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl font-bold text-slate-700"
+                                            placeholder="John Smith"
+                                            {...register("fullName", { required: "Name is required" })}
+                                        />
+                                    </div>
+                                </div>
 
-                        {/* Back Button */}
-                        {
-                            currentStep > 0 ? (
-                                <button onClick={handlePrevStep} type='button' className='btn btn-outline border-0 btn-primary font-semibold flex justify-center items-center h-10'>
-                                    <FaChevronLeft className='mr-0.5' /> <span>Back</span>
-                                </button>
-                            )
-                                : (<div></div>)
-                        }
+                                <div className="form-control">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Date of Birth</label>
+                                    <input 
+                                        type="date" 
+                                        className="input w-full h-14 bg-slate-50 border-slate-200 focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl font-bold text-slate-700 px-4"
+                                        {...register("dateOfBirth", { required: "Required" })}
+                                    />
+                                </div>
 
-                        {/* Next Button */}
-                        {
-                            currentStep < steps.length - 1 ? (
-                                <button type='button' onClick={handleNextStep} className='ml-0.5 btn btn-primary h-10'>
-                                    Next <FaChevronRight />
-                                </button>
-                            ) : (
-                                <button type='submit' className='btn btn-primary h-10'>
-                                    Sign Up
-                                </button>
-                            )
-                        }
+                                <div className="form-control">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Profile Photo</label>
+                                    <input 
+                                        type="file" 
+                                        className="file-input w-full h-14 bg-slate-50 border-slate-200 rounded-2xl file:bg-primary file:text-white file:border-none file:h-full file:mr-4 file:px-6 file:font-bold hover:file:bg-primary-focus"
+                                        {...register("userPhoto", { required: "Required" })}
+                                    />
+                                </div>
+                            </motion.div>
+                        )}
+
+                    </AnimatePresence>
+
+                    {/* --- ACTIONS --- */}
+                    <div className="flex justify-between items-center mt-10 pt-6 border-t border-slate-50">
+                        {currentStep > 0 ? (
+                            <button 
+                                type="button" 
+                                onClick={handlePrevStep}
+                                className="btn btn-ghost rounded-2xl text-slate-400 font-bold hover:bg-slate-50 gap-2 pl-2"
+                            >
+                                <FaArrowLeft size={12} /> Back
+                            </button>
+                        ) : (
+                            <div></div>
+                        )}
+
+                        {currentStep < steps.length - 1 ? (
+                            <button 
+                                type="button" 
+                                onClick={handleNextStep}
+                                className="btn btn-primary rounded-2xl px-8 shadow-xl shadow-primary/20 font-black uppercase tracking-widest text-xs h-12 gap-3"
+                            >
+                                Next Step <FaArrowRight />
+                            </button>
+                        ) : (
+                            <button 
+                                type="submit"
+                                className="btn btn-primary rounded-2xl px-10 shadow-xl shadow-primary/30 font-black uppercase tracking-widest text-xs h-12"
+                            >
+                                Create Account
+                            </button>
+                        )}
                     </div>
                 </form>
-                <p className='text-center mt-3 text-gray-100 '>Already Have an account? <span><Link className='text-blue-200 hover:underline font-semibold' to="/login">Login</Link></span></p>
-            </div>
 
+                <div className="text-center mt-6">
+                    <p className="text-sm font-medium text-slate-400">
+                        Already have an account? {' '}
+                        <Link to="/login" className="text-primary font-bold hover:underline transition-all">
+                            Log In
+                        </Link>
+                    </p>
+                </div>
+            </div>
         </div>
     );
 };

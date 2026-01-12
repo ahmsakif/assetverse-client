@@ -1,40 +1,39 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import useAuth from '../../Hooks/useAuth';
 import { useForm } from 'react-hook-form';
-import { motion } from "framer-motion";
-import { FaCalendarAlt, FaCheck, FaChevronLeft, FaChevronRight, FaEye, FaEyeSlash, FaRegEnvelope, FaTimes } from 'react-icons/fa';
+import { FaArrowRight, FaArrowLeft, FaCheck, FaBuilding, FaUserTie, FaBoxOpen, FaTimes } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
+import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
+
+import useAuth from '../../Hooks/useAuth';
+import useAxios from '../../Hooks/useAxios';
+import { handleFirebaseError } from '../../Utilities/handleFirebaseError';
+
+// Icons
 import EmailIcon from '../../Components/Icons/EmailIcon';
 import PasswordIcon from '../../Components/Icons/PasswordIcon';
 import ProfileIcon from '../../Components/Icons/ProfileIcon';
 import CompanyNameIcon from '../../Components/Icons/CompanyNameIcon';
-import SlideLeft from '../../Components/Animation/SlideLeft';
-import axios from 'axios';
-import toast from 'react-hot-toast';
-import useAxios from '../../Hooks/useAxios';
-import { handleFirebaseError } from '../../Utilities/handleFirebaseError';
-import { useQuery } from '@tanstack/react-query';
-
 
 const image_hosting_key = import.meta.env.VITE_IMAGE_BB_API_KEY;
 const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`;
 
 const JoinHR = () => {
-
-    const [currentStep, setCurrentStep] = useState(0)
-    const navigate = useNavigate()
-    const { createUser, updateUserProfile, setLoading } = useAuth()
-    const [showPwd, setShowPwd] = useState(false)
-    const [showPasswordRules, setShowPasswordRules] = useState(false)
-    const [showStepIndicator, setShowStepIndicator] = useState(false)
-    const [submittedStep, setSubmittedStep] = useState(null);
-    const axiosInstance = useAxios()
+    const [currentStep, setCurrentStep] = useState(0);
+    // --- NEW STATE FOR PASSWORD RULES VISIBILITY ---
+    const [showPasswordRules, setShowPasswordRules] = useState(false);
+    
+    const navigate = useNavigate();
+    const { createUser, updateUserProfile, setLoading } = useAuth();
+    const axiosInstance = useAxios();
 
     const {
         register,
         handleSubmit,
-        watch,
         trigger,
+        watch, 
         reset,
         formState: { errors }
     } = useForm({
@@ -42,18 +41,19 @@ const JoinHR = () => {
             email: "",
             password: "",
             fullName: "",
-            companyName: ""
-        }
-    })
-    useEffect(() => {
-        reset({
-            email: "",
-            password: "",
-            fullName: "",
             companyName: "",
-            // clear other fields if needed
-        });
-    }, [reset])
+            package: "basic"
+        }
+    });
+
+    // Password Watcher & Logic
+    const password = watch("password", "");
+    const requirements = [
+        { label: "6+ Chars", valid: password.length >= 6 },
+        { label: "Uppercase", valid: /[A-Z]/.test(password) },
+        { label: "Lowercase", valid: /[a-z]/.test(password) },
+        { label: "Number", valid: /[0-9]/.test(password) },
+    ];
 
     const { data: packages = [] } = useQuery({
         queryKey: ['packages'],
@@ -61,389 +61,293 @@ const JoinHR = () => {
             const res = await axiosInstance.get('/packages');
             return res.data;
         }
-    })
-
-    const password = watch("password", "");
+    });
 
     const steps = [
-        { fields: ["email", "password"], title: "Account Credentials" },
-        { fields: ["fullName", "dateOfBirth"], title: "Personal Details" },
-        { fields: ["companyName", "companyLogo", "package"], title: "Company Setup" },
-    ]
-    const requirements = [
-        { label: "At least 6 characters", valid: password.length >= 6 },
-        { label: "Contains an uppercase letter", valid: /[A-Z]/.test(password) },
-        { label: "Contains a lowercase letter", valid: /[a-z]/.test(password) },
-        { label: "Contains a number", valid: /[0-9]/.test(password) },
-    ]
-
-    const handleHrRegistration = async (data) => {
-        if (currentStep !== steps.length - 1) return;
-        const toastId = toast.loading("Creating your company workspace...")
-        try {
-            // Upload images to ImgBB
-            const userPhoto = { image: data.userPhoto[0] }
-            const companyLogo = { image: data.companyLogo[0] }
-            const userPhotoRes = await axios.post(image_hosting_api, userPhoto, {
-                headers: { 'content-type': 'multipart/form-data' }
-            })
-            const companyLogoRes = await axios.post(image_hosting_api, companyLogo, {
-                headers: { 'content-type': 'multipart/form-data' }
-            })
-            const userPhotoURL = userPhotoRes.data.data.display_url
-            const logoURL = companyLogoRes.data.data.display_url
-
-            // Firebase Registration
-            await createUser(data.email, data.password)
-                .then(async () => {
-                    await updateUserProfile(data.fullName, userPhotoURL)
-                        .then(async () => {
-
-                            const selectedPkg = packages.find(pkg=>pkg.name.toLowerCase() === data.package)
-                            const limit = selectedPkg ? selectedPkg.employeeLimit : 5
-                            const packageName = selectedPkg ? selectedPkg.name : "Basic"
-
-                            // Save data in MongoDB
-                            const userData = {
-                                name: data.fullName,
-                                email: data.email,
-                                role: "hr",
-                                companyName: data.companyName,
-                                companyLogo: logoURL,
-                                dateOfBirth: data.dateOfBirth,
-
-                                packageLimit: limit,
-                                subscription: packageName,
-                                userPhoto: userPhotoURL,
-
-                            }
-console.log(userData);
-                            const res = await axiosInstance.post('/users', userData)
-                            if (res.data.insertedId) {
-                                toast.success("Employee Account Created! Login Now", { id: toastId });
-                                reset()
-                                setCurrentStep(0)
-                                navigate('/login')
-                            }
-                        })
-                })
-            setLoading(false)
-        }
-        catch (error) {
-            // console.error(error);
-            setLoading(false)
-            setCurrentStep(0)
-            handleFirebaseError(error.code, toastId)
-            reset()
-        }
-        // console.log(data);
-    }
+        { id: 0, title: "Account", icon: <FaUserTie /> },
+        { id: 1, title: "Profile", icon: <ProfileIcon /> },
+        { id: 2, title: "Company", icon: <FaBuilding /> },
+    ];
 
     const handleNextStep = async () => {
-        const isValid = await trigger(steps[currentStep].fields)
-        if (isValid) {
-            setSubmittedStep(null);
-            setCurrentStep((prev) => prev + 1)
-        } else {
-            setSubmittedStep(currentStep)
-        }
-        console.log(currentStep);
-    }
+        const fields = [
+            ["email", "password"],
+            ["fullName", "dateOfBirth", "userPhoto"],
+            ["companyName", "companyLogo", "package"]
+        ];
+        const isValid = await trigger(fields[currentStep]);
+        if (isValid) setCurrentStep((prev) => prev + 1);
+    };
 
-    const handlePrevStep = () => {
-        setCurrentStep((prev) => prev - 1)
-    }
+    const handlePrevStep = () => setCurrentStep((prev) => prev - 1);
+
+    const handleHrRegistration = async (data) => {
+        const toastId = toast.loading("Setting up your workspace...");
+        try {
+            const uploadImage = async (file) => {
+                const formData = new FormData();
+                formData.append('image', file[0]);
+                const res = await axios.post(image_hosting_api, formData);
+                return res.data.data.display_url;
+            };
+
+            const userPhotoURL = await uploadImage(data.userPhoto);
+            const logoURL = await uploadImage(data.companyLogo);
+
+            await createUser(data.email, data.password);
+            await updateUserProfile(data.fullName, userPhotoURL);
+
+            const selectedPkg = packages.find(pkg => pkg.name.toLowerCase() === data.package) || packages[0];
+            
+            const userData = {
+                name: data.fullName,
+                email: data.email,
+                role: "hr",
+                companyName: data.companyName,
+                companyLogo: logoURL,
+                dateOfBirth: data.dateOfBirth,
+                packageLimit: selectedPkg?.employeeLimit || 5,
+                subscription: selectedPkg?.name || "Basic",
+                userPhoto: userPhotoURL,
+            };
+
+            const res = await axiosInstance.post('/users', userData);
+            if (res.data.insertedId) {
+                toast.success("Account created!", { id: toastId });
+                reset();
+                navigate('/login');
+            }
+        } catch (error) {
+            setLoading(false);
+            handleFirebaseError(error.code, toastId);
+        }
+    };
 
     return (
+        <div className="w-full lg:w-1/2 flex flex-col items-center justify-center bg-white min-h-screen lg:rounded-r-[80px] relative z-10 shadow-2xl animate-in slide-in-from-left duration-700">
+            <div className="w-full max-w-[500px] px-8 py-12 border-4 border-slate-500/10 shadow-xl rounded-4xl">
+                
+                <div className="mb-8 text-center">
+                    <h1 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Create HR Account</h1>
+                    <p className="text-slate-500 font-medium text-sm">Join AssetVerse to manage your team.</p>
+                </div>
 
-
-        <div className=' min-h-screen bg-base-300/10 border-amber-600 lg:rounded-r-[100px] w-full lg:w-1/2 justify-center flex items-center z-10'>
-
-            <div className=' card w-full overflow-hidden flex flex-col justify-center items-center '>
-
-
-                <form
-                    onSubmit={handleSubmit(handleHrRegistration)}
-                    onKeyDown={e => {
-                        if (e.key === "Enter" && currentStep < steps.length - 1) {
-                            e.preventDefault()
-                            handleNextStep()
-                        }
-                    }}
-                    className='relative card-body max-w-md pt-10 rounded-2xl shadow-r-lg bg-blue-100/90 w-full justify-center overflow-hidden'>
-                    {
-                        showStepIndicator && <div className=' absolute top-0 left-0  h-1 w-full bg-gray-200 rounded-full overflow-hidden '>
-                            <div className={`absolute left-0 top-0 h-full bg-primary transition-all duration-500 
-                            ${currentStep === 0
-                                    ? 'w-1/3'
-                                    : currentStep === 1
-                                        ? 'w-2/3' : 'w-full'
-                                }
-                            `}
-                            >
-
+                <div className="flex justify-between items-center mb-10 relative">
+                    <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 -z-10 rounded-full"></div>
+                    <div 
+                        className="absolute top-1/2 left-0 h-1 bg-primary -z-0 rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+                    ></div>
+                    {steps.map((step, index) => (
+                        <div key={index} className={`flex flex-col items-center gap-2 bg-white px-2`}>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                                index <= currentStep ? 'border-primary bg-primary text-white shadow-lg' : 'border-slate-200 text-slate-300'
+                            }`}>
+                                {index < currentStep ? <FaCheck size={12}/> : <span className="text-sm font-bold">{index + 1}</span>}
                             </div>
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${index <= currentStep ? 'text-primary' : 'text-slate-300'}`}>
+                                {step.title}
+                            </span>
                         </div>
-                    }
+                    ))}
+                </div>
 
-                    <div className="mb-8 text-center">
-                        <h1 className="text-2xl font-semibold text-base-content">
-                            Create HR Account
-                        </h1>
-                        <p className="mt-1 text-sm text-gray-500">
-                            Set up your profile and company to start managing your team.
-                        </p>
-                    </div>
-
-                    {/* Step Indicator */}
-
-
-                    {/* Animated Form Content */}
-
-
-
-                    {/* Step 1 */}
-                    {
-                        currentStep === 0 && (
-                            <SlideLeft>
-                                <div>
-                                    <h2 className='text-lg mb-3 font-semibold'>{steps[0].title}</h2>
-                                    {/* Email Input */}
-                                    <div className='form-control mb-3'>
-                                        <label className='label mb-1'><span className='label-text'>Email</span></label>
-                                        <div
-                                            onFocus={() => setShowStepIndicator(true)}
-                                            className='input w-full input-bordered validator '>
-                                            <EmailIcon />
-                                            <input type="email" placeholder='hr@company.com' className=''
-                                                {...register("email", {
-                                                    required: "Email is required",
-                                                    pattern: {
-                                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                                        message: "Invalid email address"
-                                                    }
-                                                })} />
-                                        </div>
-                                        {errors.email && <span className='text-red-500 text-sm mt-2'>{errors.email.message}</span>}
-                                    </div>
-                                    {/* Password Input */}
-                                    <div className='form-control'>
-                                        <label className="label mb-1"><span className='label-text'>Password</span></label>
-                                        <div
-                                            onChange={() => {
-                                                setShowPasswordRules(true)
-                                                setShowStepIndicator(true)
-                                            }}
-                                            // onBlur={() => setShowPasswordRules(false)}
-                                            className='input w-full input-bordered validator'
-                                        >
-                                            <PasswordIcon />
-                                            {
-                                                showPwd
-                                                    ? <FaEye onClick={() => setShowPwd(!showPwd)} className='absolute right-2.5 cursor-default text-lg text-gray-600 h-full ' />
-                                                    :
-                                                    <FaEyeSlash onClick={() => setShowPwd(!showPwd)} className='absolute right-2.5 cursor-default text-lg text-gray-600 h-full' />
-                                            }
-                                            <input
-                                                type={`${showPwd ? 'text' : 'password'}`}
-                                                placeholder='Create a password'
-                                                {...register("password",
-                                                    {
-                                                        required: "Password is required",
-                                                        validate: {
-                                                            length: (val) => val.length >= 6 || "Must be at least 6 characters",
-                                                            upper: (val) => /[A-Z]/.test(val) || "Need uppercase letter",
-                                                            lower: (val) => /[a-z]/.test(val) || "Need lowercase letter",
-                                                            number: (val) => /[0-9]/.test(val) || "Need a number"
-                                                        }
-                                                    }
-                                                )} />
-                                        </div>
-                                        {errors.password && <span className='text-red-500 text-sm'>{errors.password.message}</span>}
-                                    </div>
-                                    {/* Validation checklist */}
-                                    {
-                                        showPasswordRules && (
-                                            <div className='mt-4'>
-                                                <p className='font-semibold mb-2 text-gray-500 text-xs uppercase tracking-wide'>Password must contain:</p>
-                                                <div className='space-y-1'>
-                                                    {
-                                                        requirements.map((req, index) => (
-                                                            <div
-                                                                key={index}
-                                                                className={`flex items-center gap-2 transition-all duration-300 ${req.valid ? 'text-blue-500' : 'text-gray-400'}`}
-                                                            >
-                                                                {
-                                                                    req.valid ? <FaCheck className='text-xs'></FaCheck> : <FaTimes className='text-xs'></FaTimes>
-                                                                }
-                                                                <span className={req.valid ? 'line-through opacity-70' : ''}>
-                                                                    {
-                                                                        req.label
-                                                                    }
-                                                                </span>
-                                                            </div>
-                                                        ))
-                                                    }
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-                                </div>
-                            </SlideLeft>
-                        )
-                    }
-
-                    {/* Step-2 */}
-                    {currentStep === 1 && (
-                        <SlideLeft>
-                            <div>
-                                <h2 className='text-lg mb-3 font-semibold'>{steps[1].title}</h2>
-                                {/* Name Input */}
-                                <div className='form-control mb-3 '>
-                                    <label className='label mb-1'><span className='label-text'>Full Name</span></label>
-                                    <div className='input w-full input-bordered'>
-                                        <ProfileIcon />
-                                        <input type="text" placeholder='Full Name' className=''
-                                            {...register("fullName", { required: "Name is required" })} />
-                                    </div>
-                                    {errors.fullName && <span className='text-red-500 text-sm'>{errors.fullName.message}</span>}
-                                </div>
-                                {/* DOB Input */}
+                <form onSubmit={handleSubmit(handleHrRegistration)} className="min-h-[420px] flex flex-col">
+                    <AnimatePresence mode='wait'>
+                        
+                        {currentStep === 0 && (
+                            <motion.div 
+                                key="step1"
+                                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                                className="space-y-5 flex-1"
+                            >
                                 <div className="form-control">
-                                    <label className="label mb-1">
-                                        <span className="label-text">Date of Birth</span>
-                                    </label>
-
-                                    <div className="input input-bordered w-full flex items-center gap-2 mb-3">
-                                        <FaCalendarAlt className="text-gray-400" />
-
-                                        <input
-                                            type="date"
-                                            {...register("dateOfBirth", { required: "Date of Birth is required" })}
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Email Address</label>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><EmailIcon /></div>
+                                        <input 
+                                            type="email" 
+                                            className="input w-full pl-12 h-14 bg-slate-50 border-slate-200 focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl font-bold text-slate-700"
+                                            placeholder="hr@company.com"
+                                            {...register("email", { required: "Email is required" })}
                                         />
                                     </div>
+                                    {errors.email && <span className="text-rose-500 text-xs font-bold ml-1 mt-1">{errors.email.message}</span>}
+                                </div>
 
-                                    {errors.dateOfBirth && (
-                                        <span className="text-red-500 text-sm">
-                                            {errors.dateOfBirth.message}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* Profile Photo */}
-                                <div className='form-control'>
-                                    <label className="label mb-1"><span className='label-text'>Your Photo</span></label>
-                                    <div>
-                                        <input type="file" placeholder='your company logo' className='file-input file-input-bordered w-full'
-                                            {...register("userPhoto", { required: "Profile Photo is required" })} />
+                                <div className="form-control">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Password</label>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><PasswordIcon /></div>
+                                        <input 
+                                            type="password" 
+                                            className="input w-full pl-12 h-14 bg-slate-50 border-slate-200 focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl font-bold text-slate-700"
+                                            placeholder="••••••••"
+                                            // --- UPDATE: Toggle Rules on Focus ---
+                                            onFocus={() => setShowPasswordRules(true)}
+                                            {...register("password", { 
+                                                required: "Password is required", 
+                                                validate: {
+                                                    length: (val) => val.length >= 6 || "Too short",
+                                                    upper: (val) => /[A-Z]/.test(val) || "Missing uppercase",
+                                                    lower: (val) => /[a-z]/.test(val) || "Missing lowercase",
+                                                    number: (val) => /[0-9]/.test(val) || "Missing number"
+                                                }
+                                            })}
+                                        />
                                     </div>
-                                    {submittedStep === 2 && errors.userPhoto && <span className='text-red-500 text-sm'>{errors.userPhoto.message}</span>}
+                                    {errors.password && <span className="text-rose-500 text-xs font-bold ml-1 mt-1">{errors.password.message}</span>}
                                 </div>
-                            </div>
-                        </SlideLeft>
-                    )}
 
-                    {/* Step-3 */}
-                    {currentStep === 2 && (
-                        <SlideLeft>
-                            <div>
-                                <h2 className='text-lg mb-3  font-semibold'>{steps[2].title}</h2>
-                                {/*Company Name Input */}
-                                <div className='form-control mb-3'>
-                                    <label className='label mb-1'><span className='label-text'>Company Name</span></label>
-                                    <div className='input w-full input-bordered'>
-                                        <CompanyNameIcon />
-                                        <input type="text" placeholder='Tech Solutions Inc'
-                                            {...register("companyName", { required: "Company Name is required" })} />
-                                    </div>
-                                    {submittedStep === 2 && errors.companyName && <span className='text-red-500 text-sm'>{errors.companyName.message}</span>}
-                                </div>
-                                {/* Logo Input */}
-                                <div className='form-control'>
-                                    <label className="label mb-1"><span className='label-text'>Company Logo</span></label>
-                                    <div>
-                                        <input type="file" placeholder='your company logo' className='file-input file-input-bordered w-full'
-                                            {...register("companyLogo", { required: "Company Logo is required" })} />
-                                    </div>
-                                    {submittedStep === 2 && errors.companyLogo && <span className='text-red-500 text-sm'>{errors.companyLogo.message}</span>}
-                                </div>
-                                {/* Package */}
-                                <div className="flex flex-col gap-3 mt-4">
-                                    <label className='font-semibold'>Select Package</label>
-                                    {packages.map((pkg) => (
-                                        <label
-                                            key={pkg._id}
-                                            className="cursor-pointer border border-gray-200 rounded-xl p-4 flex items-center gap-4 transition-all hover:border-blue-600 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-200 has-[:checked]:shadow-sm"
+                                {/* --- ANIMATED PASSWORD REQUIREMENTS --- */}
+                                <AnimatePresence>
+                                    {showPasswordRules && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="overflow-hidden"
                                         >
-                                            <input
-                                                type="radio"
-                                                value={pkg.name.toLowerCase()} // e.g., 'basic', 'standard'
-                                                className="peer hidden"
-                                                defaultChecked={pkg.name === 'Basic'} // Default select Basic
-                                                {...register("package", { required: "Please select a package" })}
-                                            />
-
-                                            <div className="w-6 h-6 rounded-full border-2 border-gray-300 peer-checked:border-blue-500 peer-checked:border-[6px] bg-white transition-all shrink-0"></div>
-
-                                            <div className="flex-1 flex justify-between items-center">
-                                                <div>
-                                                    <h3 className="font-bold text-gray-700 capitalize">{pkg.name}</h3>
-                                                    <p className="text-xs text-gray-500">{pkg.employeeLimit} Employees</p>
-                                                </div>
-
-                                                {/* Price Logic */}
-                                                <div className="text-right leading-tight">
-                                                    {pkg.name === 'Basic' ? (
-                                                        <>
-                                                            <span className="block font-bold text-blue-600 text-sm">$0</span>
-                                                            <span className="text-[10px] text-gray-600 font-medium">For the first month, then $5/mo </span>
-                                                        </>
-                                                    ) : (
-                                                        <p className="font-bold text-gray-600 text-sm">
-                                                            ${pkg.price} <span className="text-[10px] font-normal text-gray-400">/month</span>
-                                                        </p>
-                                                    )}
-                                                </div>
+                                            <div className="grid grid-cols-2 gap-2 bg-slate-50 p-4 rounded-2xl border border-slate-100 mt-2">
+                                                {requirements.map((req, index) => (
+                                                    <div key={index} className={`flex items-center gap-2 text-xs font-bold transition-colors duration-300 ${req.valid ? 'text-emerald-500' : 'text-slate-400'}`}>
+                                                        <div className={`w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${req.valid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 text-transparent'}`}>
+                                                            <FaCheck size={8} />
+                                                        </div>
+                                                        {req.label}
+                                                    </div>
+                                                ))}
                                             </div>
-                                        </label>
-                                    ))}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                            </motion.div>
+                        )}
+
+                        {/* STEP 2: PERSONAL */}
+                        {currentStep === 1 && (
+                            <motion.div 
+                                key="step2"
+                                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                                className="space-y-5 flex-1"
+                            >
+                                <div className="form-control">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Full Name</label>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><ProfileIcon /></div>
+                                        <input 
+                                            type="text" 
+                                            className="input w-full pl-12 h-14 bg-slate-50 border-slate-200 focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl font-bold text-slate-700"
+                                            placeholder="Jane Doe"
+                                            {...register("fullName", { required: "Name is required" })}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        </SlideLeft>
-                    )}
+                                <div className="form-control">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Date of Birth</label>
+                                    <input 
+                                        type="date" 
+                                        className="input w-full h-14 bg-slate-50 border-slate-200 focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl font-bold text-slate-700 px-4"
+                                        {...register("dateOfBirth", { required: "Required" })}
+                                    />
+                                </div>
+                                <div className="form-control">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Profile Photo</label>
+                                    <input 
+                                        type="file" 
+                                        className="file-input w-full h-14 bg-slate-50 border-slate-200 rounded-2xl file:bg-primary file:text-white file:border-none file:h-full file:mr-4 file:px-6 file:font-bold hover:file:bg-primary-focus"
+                                        {...register("userPhoto", { required: "Required" })}
+                                    />
+                                </div>
+                            </motion.div>
+                        )}
 
+                        {/* STEP 3: COMPANY */}
+                        {currentStep === 2 && (
+                            <motion.div 
+                                key="step3"
+                                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                                className="space-y-6 flex-1"
+                            >
+                                <div className="form-control">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Company Name</label>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><CompanyNameIcon /></div>
+                                        <input 
+                                            type="text" 
+                                            className="input w-full pl-12 h-14 bg-slate-50 border-slate-200 focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl font-bold text-slate-700"
+                                            placeholder="Acme Corp"
+                                            {...register("companyName", { required: "Required" })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-control">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Company Logo</label>
+                                    <input 
+                                        type="file" 
+                                        className="file-input w-full h-14 bg-slate-50 border-slate-200 rounded-2xl file:bg-primary file:text-white file:border-none file:h-full file:mr-4 file:px-6 file:font-bold hover:file:bg-primary-focus"
+                                        {...register("companyLogo", { required: "Required" })}
+                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Select Package</label>
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {packages.map((pkg) => (
+                                            <label 
+                                                key={pkg._id} 
+                                                className="cursor-pointer relative bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 flex items-center justify-between hover:border-primary/50 transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:checked]:shadow-md"
+                                            >
+                                                <input 
+                                                    type="radio" 
+                                                    value={pkg.name.toLowerCase()} 
+                                                    className="radio radio-primary absolute right-4 top-4"
+                                                    {...register("package")}
+                                                    defaultChecked={pkg.name === 'Basic'}
+                                                />
+                                                <div className="flex items-center gap-4">
+                                                    <div className="p-3 bg-white rounded-xl shadow-sm text-primary"><FaBoxOpen /></div>
+                                                    <div>
+                                                        <h4 className="font-black text-slate-700 uppercase tracking-wide text-sm">{pkg.name}</h4>
+                                                        <p className="text-xs text-slate-400 font-bold">{pkg.employeeLimit} Members</p>
+                                                    </div>
+                                                </div>
+                                                <div className="pr-10">
+                                                    <p className="font-black text-slate-800">${pkg.price}</p>
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-                    {/* Navigation Buttons */}
-                    <div className='card-actions justify-between mt-6'>
+                    {/* Actions */}
+                    <div className="flex justify-between items-center mt-10 pt-6 border-t border-slate-50">
+                        {currentStep > 0 ? (
+                            <button type="button" onClick={handlePrevStep} className="btn btn-ghost rounded-2xl text-slate-400 font-bold hover:bg-slate-50 gap-2 pl-2">
+                                <FaArrowLeft size={12} /> Back
+                            </button>
+                        ) : <div></div>}
 
-                        {/* Back Button */}
-                        {
-                            currentStep > 0 ? (
-                                <button onClick={handlePrevStep} type='button' className='btn btn-outline border-0 btn-primary font-semibold flex justify-center items-center h-10'>
-                                    <FaChevronLeft className='mr-0.5' /> <span>Back</span>
-                                </button>
-                            )
-                                : (<div></div>)
-                        }
-
-                        {/* Next Button */}
-                        {
-                            currentStep < steps.length - 1 ? (
-                                <button type='button' onClick={handleNextStep} className='ml-0.5 btn btn-primary h-10'>
-                                    Next <FaChevronRight />
-                                </button>
-                            ) : (
-                                <button type='submit' className='btn btn-primary h-10'>
-                                    Sign Up
-                                </button>
-                            )
-                        }
+                        {currentStep < steps.length - 1 ? (
+                            <button type="button" onClick={handleNextStep} className="btn btn-primary rounded-2xl px-8 shadow-xl shadow-primary/20 font-black uppercase tracking-widest text-xs h-12 gap-3">
+                                Next Step <FaArrowRight />
+                            </button>
+                        ) : (
+                            <button type="submit" className="btn btn-primary rounded-2xl px-10 shadow-xl shadow-primary/30 font-black uppercase tracking-widest text-xs h-12">
+                                Complete Setup
+                            </button>
+                        )}
                     </div>
                 </form>
-                <p className='text-center text-white/80 mt-3'>Already Have an account? <span><Link className='text-blue-200 hover:underline font-semibold' to="/login">Login</Link></span></p>
+
+                <div className="text-center mt-6">
+                    <p className="text-sm font-medium text-slate-400">Already have an account? <Link to="/login" className="text-primary font-bold hover:underline transition-all">Log In</Link></p>
+                </div>
             </div>
         </div>
-
-
     );
 };
 

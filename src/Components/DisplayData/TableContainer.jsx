@@ -1,39 +1,79 @@
 import React from 'react';
 import AssetRow from '../AssetComponents/AssetRow';
+import { FaBoxOpen, FaLayerGroup, FaSortAmountDown } from 'react-icons/fa';
 
 const TableContainer = ({ assets, onDelete, onUpdate }) => {
 
-    // if (!assets || assets.length === 0) return <div className="text-center text-2xl p-10 opacity-50">No assets found.</div>;
-    console.log(assets);
-
     return (
-        <div>
-            <div>
-                <ul className="flex flex-col bg-base-100 rounded-box shadow-md border border-base-200 w-full">
+        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden">
 
-                    <li className="flex items-center gap-4 p-4 bg-base-200 text-xs uppercase font-bold tracking-wide opacity-70 border-b border-base-300">
-                        <div className="w-8">Sl</div>
-                        <div className="w-14">Image</div>
-                        <div className="flex-1">Asset Name</div>
-                        <div className="w-28 text-center">Type</div>
-                        <div className="w-16 text-center">Qty</div>
-                        <div className="w-16 text-center">Available</div>
-                        <div className="w-24 text-center">Date</div>
-                        <div className="w-20 text-right pr-2">Actions</div>
-                    </li>
+                {/* --- HEADER BAR --- */}
+                {/* Hidden on mobile because the Row transforms into a card layout */}
+                <div className="hidden md:flex items-center gap-6 px-5 py-5 bg-slate-50/80 border-b border-slate-100">
+                    
+                    {/* Index */}
+                    <div className="hidden lg:block w-8 text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">
+                        #
+                    </div>
 
-                    {/* --- DATA ROWS --- */}
-                    {assets.map((asset, index) => (
-                        <AssetRow
-                            key={asset._id}
-                            asset={asset}
-                            index={index}
-                            onDelete={onDelete}
-                            onUpdate={onUpdate}
-                        />
-                    ))}
-                </ul>
+                    {/* Asset Name + Image Block */}
+                    <div className="flex-1 md:flex-[1.5] text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2">
+                        Asset Details
+                    </div>
+
+                    {/* Stock Status Bar */}
+                    <div className="w-48 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                        Inventory Status
+                    </div>
+
+                    {/* Date Added */}
+                    <div className="hidden lg:block w-32 pl-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                        Date Added
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="w-20 text-right text-[10px] font-black uppercase text-slate-400 tracking-widest pr-4">
+                        Manage
+                    </div>
+                </div>
+
+                {/* --- EMPTY STATE --- */}
+                {(!assets || assets.length === 0) ? (
+                    <div className="flex flex-col items-center justify-center py-24 text-slate-300">
+                        <div className="bg-slate-50 p-6 rounded-full mb-4">
+                            <FaBoxOpen size={32} className="text-slate-300" />
+                        </div>
+                        <p className="font-bold text-lg text-slate-500">Your inventory is empty</p>
+                        <p className="text-sm font-medium text-slate-400">Add some assets to see them listed here.</p>
+                    </div>
+                ) : (
+                    /* --- DATA ROWS --- */
+                    <ul className="flex flex-col w-full divide-y divide-slate-50">
+                        {assets.map((asset, index) => (
+                            <AssetRow
+                                key={asset._id}
+                                asset={asset}
+                                index={index}
+                                onDelete={onDelete}
+                                onUpdate={onUpdate}
+                            />
+                        ))}
+                    </ul>
+                )}
             </div>
+
+            {/* --- FOOTER META INFO --- */}
+            {assets && assets.length > 0 && (
+                <div className="mt-4 px-6 flex items-center justify-between text-slate-400">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter">
+                        <FaLayerGroup /> Showing {assets.length} Items
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter">
+                        <FaSortAmountDown /> Recent First
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { auth } from '../Firebase/firebase.config';
 import { createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, signInWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
+import LoadingSpinner from '../Utilities/LoadingSpinner';
 
 const AuthProvider = ({children}) => {
 
@@ -65,7 +66,7 @@ console.log("from auth provider ",user);
             {
                 !loading 
                 ? children
-                : <span>Loading from AuthProvider</span>
+                : <LoadingSpinner />
             }
         </AuthContext>
     );

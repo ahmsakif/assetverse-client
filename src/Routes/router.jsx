@@ -26,16 +26,23 @@ import PaymentHistory from '../Components/Payments/PaymentHistory';
 import HRRoute from './HRRoute';
 import EmployeeRoute from './EmployeeRoute';
 import Profile from '../Pages/Shared/Profile';
+import ErrorPage from '../Pages/ErrorPages/ErrorPage';
+import Pricing from '../Pages/Pricing/Pricing';
 
 const router = createBrowserRouter([
     {
         path: "/",
         Component: HomeLayout,
+        errorElement: <ErrorPage />,
         hydrateFallbackElement: <LoadingSpinner></LoadingSpinner>,
         children: [
             {
                 index: true,
                 Component: Home,
+            },
+            {
+                path: 'pricing',
+                Component: Pricing,
             }
         ]
     },
@@ -108,7 +115,7 @@ const router = createBrowserRouter([
             },
             {
                 path: 'payment-success',
-                element: PaymentSuccess,
+                element: <PaymentSuccess />,
             },
             {
                 path: 'payment-history',

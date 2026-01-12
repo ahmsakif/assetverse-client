@@ -5,13 +5,13 @@ import { useEffect } from "react";
 
 
 const instance = axios.create({
-    baseURL: 'http://localhost:3000'
-    // baseURL: 'https://assetverse-server-xi.vercel.app'
+    // baseURL: 'http://localhost:3000'
+    baseURL: 'https://assetverse-server-xi.vercel.app'
 });
 
 const useAxiosSecure = () => {
     const navigate = useNavigate();
-    const { signOutUser } = useAuth(); // Ensure Yyour AuthContext calls it 'logOut'
+    const { signOutUser } = useAuth(); 
 
     useEffect(() => {
         const requestInterceptor = instance.interceptors.request.use((config) => {
@@ -21,6 +21,7 @@ const useAxiosSecure = () => {
             if (token) {
                 config.headers.authorization = `Bearer ${token}`
             }
+            console.log('JWT token',token);
             return config
         })
 
