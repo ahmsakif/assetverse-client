@@ -6,22 +6,22 @@ import { FaArrowRight, FaCheckCircle, FaBoxOpen } from 'react-icons/fa';
 const Banner = () => {
     return (
         <div className='relative w-full min-h-[700px] bg-slate-900 overflow-hidden flex items-center py-40'>
-            
+
             {/* --- BACKGROUND EFFECTS --- */}
             {/* 1. Tech Grid Overlay */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-            
+
             {/* 2. Gradient Blobs */}
             <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/30 rounded-full blur-[120px] pointer-events-none"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
 
-            <div className='max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10'>
-                
+            <div className='max-w-[1440px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-36 items-center relative z-10'>
+
                 {/* --- LEFT SIDE: Copywriting --- */}
                 <div className='text-center lg:text-left space-y-8'>
-                    
+
                     {/* Badge */}
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
@@ -32,7 +32,7 @@ const Banner = () => {
                     </motion.div>
 
                     {/* Headline */}
-                    <motion.h1 
+                    <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2, duration: 0.6 }}
@@ -43,9 +43,9 @@ const Banner = () => {
                             Corporate Assets
                         </span>
                     </motion.h1>
-                    
+
                     {/* Subhead */}
-                    <motion.p 
+                    <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.6 }}
@@ -53,16 +53,16 @@ const Banner = () => {
                     >
                         Eliminate spreadsheets and confusion. AssetVerse empowers HR teams to track, assign, and recover equipment with zero friction.
                     </motion.p>
-                    
+
                     {/* CTAs */}
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4, duration: 0.6 }}
                         className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
                     >
                         <Link to="/join-hr" className="group btn btn-lg bg-blue-600 hover:bg-blue-500 text-white border-none rounded-2xl px-8 font-bold shadow-lg shadow-blue-900/50 hover:shadow-blue-600/40 transition-all hover:-translate-y-1">
-                            Start as HR Manager <FaArrowRight className="group-hover:translate-x-1 transition-transform"/>
+                            Start as HR Manager <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
                         </Link>
                         <Link to="/join-employee" className="btn btn-lg bg-white/5 hover:bg-white/10 text-white border-white/10 hover:border-white/30 backdrop-blur-md rounded-2xl px-8 font-bold transition-all">
                             Employee Login
@@ -70,7 +70,7 @@ const Banner = () => {
                     </motion.div>
 
                     {/* Trust Indicators */}
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.6 }}
@@ -82,7 +82,7 @@ const Banner = () => {
 
                 {/* --- RIGHT SIDE: Glassmorphism Visuals --- */}
                 <div className='relative w-full h-[500px] flex items-center justify-center perspective-1000'>
-                    
+
                     {/* MAIN DASHBOARD CARD (Glass) */}
                     <motion.div
                         initial={{ rotateY: -10, rotateX: 10, opacity: 0 }}

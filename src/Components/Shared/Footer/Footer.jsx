@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaFacebook, FaInstagram, FaLinkedinIn, FaGithub } from 'react-icons/fa';
 import { MdKeyboardDoubleArrowUp } from "react-icons/md";
-import { Link } from 'react-router'; 
+import { Link } from 'react-router';
 import LogoFull from '../../Logo/LogoFull';
 
 const Footer = () => {
@@ -12,18 +12,18 @@ const Footer = () => {
 
     return (
         <footer className="relative bg-slate-950 border-t border-slate-900 pt-20 pb-10">
-            <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-                
+            <div className="max-w-[1440px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+
                 {/* --- BRAND COLUMN --- */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="flex items-center gap-3">
                         {/* Ensure LogoFull can take a fill class or wrap it */}
-                        <div className="brightness-0 invert opacity-90"> 
+                        <div className="brightness-0 invert opacity-90">
                             <LogoFull className="h-8 w-auto" />
                         </div>
                         <h2 className="text-white font-black text-2xl tracking-tighter">AssetVerse</h2>
                     </div>
-                    
+
                     <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
                         Simplifying asset tracking for modern teams. We help businesses manage equipment, track assignments, and reduce loss with one intuitive platform.
                     </p>
@@ -62,13 +62,13 @@ const Footer = () => {
             </div>
 
             {/* --- BOTTOM BAR --- */}
-            <div className="max-w-7xl mx-auto px-6 border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="max-w-[1440px] mx-auto px-6 border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                 <p className="text-slate-500 text-xs font-medium">
                     &copy; {new Date().getFullYear()} AssetVerse Inc. All rights reserved.
                 </p>
-                
-                <button 
-                    onClick={scrollToTop} 
+
+                <button
+                    onClick={scrollToTop}
                     className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-widest"
                 >
                     Back to Top <MdKeyboardDoubleArrowUp size={16} />
@@ -80,10 +80,10 @@ const Footer = () => {
 
 // Helper Component for Social Icons
 const SocialLink = ({ href, icon }) => (
-    <a 
-        href={href} 
-        target="_blank" 
-        rel="noreferrer" 
+    <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
         className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-slate-400 hover:bg-white hover:text-slate-950 transition-all duration-300"
     >
         {icon}

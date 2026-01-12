@@ -46,8 +46,8 @@ const Testimonials = () => {
             <div className="container mx-auto px-6 relative z-10">
                 
                 {/* --- STATS DASHBOARD --- */}
-                <div className="bg-slate-800/50 rounded-3xl p-8 md:p-12 mb-24 border border-slate-700/50 backdrop-blur-md">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div className="bg-slate-800/50 rounded-3xl p-8 md:p-12 mb-24 border border-slate-700/50 backdrop-blur-md max-w-7xl mx-auto">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 ">
                         {stats.map((stat, idx) => (
                             <motion.div 
                                 key={stat.id}
@@ -78,7 +78,7 @@ const Testimonials = () => {
                 </div>
 
                 {/* --- REVIEWS GRID --- */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-[1440px] mx-auto px-8">
                     {reviews.map((review, idx) => (
                         <motion.div 
                             key={review.id}

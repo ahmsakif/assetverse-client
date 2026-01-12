@@ -82,26 +82,25 @@ const UpgradePackage = () => {
             </div>
 
             {/* --- PRICING GRID --- */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto items-start">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-[1440px] mx-auto items-start">
                 {packages.map((pkg, index) => {
                     const isCurrent = pkg.name === currentPackageName;
-                    
+
                     // Logic to check if this package is "lower" than current
                     // We find the current package object to compare limits
                     const currentPkgObj = packages.find(p => p.name === currentPackageName);
                     const isLowerPlan = currentPkgObj && pkg.employeeLimit < currentPkgObj.employeeLimit;
 
                     // Highlight the "middle" plan or the highest plan as popular/premium
-                    const isRecommended = index === 1; 
+                    const isRecommended = index === 1;
 
                     return (
-                        <div 
+                        <div
                             key={pkg._id}
-                            className={`relative flex flex-col p-8 rounded-[2.5rem] transition-all duration-300 ${
-                                isCurrent 
-                                ? 'bg-white border-2 border-primary ring-4 ring-primary/10 shadow-xl scale-105 z-10' 
-                                : 'bg-white border border-slate-100 shadow-lg hover:shadow-xl hover:border-slate-200 hover:-translate-y-1'
-                            } ${isLowerPlan ? 'opacity-70 grayscale-[0.5]' : ''}`}
+                            className={`relative flex flex-col p-8 rounded-[2.5rem] transition-all duration-300 ${isCurrent
+                                    ? 'bg-white border-2 border-primary ring-4 ring-primary/10 shadow-xl scale-105 z-10'
+                                    : 'bg-white border border-slate-100 shadow-lg hover:shadow-xl hover:border-slate-200 hover:-translate-y-1'
+                                } ${isLowerPlan ? 'opacity-70 grayscale-[0.5]' : ''}`}
                         >
                             {/* Recommended Badge */}
                             {isRecommended && !isCurrent && !isLowerPlan && (
@@ -169,7 +168,7 @@ const UpgradePackage = () => {
                                         Unavailable
                                     </button>
                                 ) : (
-                                    <button 
+                                    <button
                                         onClick={() => handleBuy(pkg)}
                                         disabled={loadingPkg === pkg._id}
                                         className="btn btn-primary btn-lg w-full rounded-2xl shadow-xl shadow-primary/30 hover:shadow-primary/50 font-black uppercase tracking-widest transition-all hover:scale-[1.02]"
@@ -190,7 +189,7 @@ const UpgradePackage = () => {
             {/* --- TRUST FOOTER --- */}
             <div className="text-center mt-20 pb-10 border-t border-slate-100 pt-10">
                 <p className="text-slate-400 font-medium text-sm">
-                    Secure payment processing powered by <span className="font-bold text-slate-600">Stripe</span>. 
+                    Secure payment processing powered by <span className="font-bold text-slate-600">Stripe</span>.
                     <br />Need a custom enterprise plan? <a href="#" className="text-primary hover:underline">Contact Sales</a>.
                 </p>
             </div>

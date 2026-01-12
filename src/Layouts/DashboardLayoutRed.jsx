@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate, Link } from 'react-router';
-import { 
-    FaHome, FaBox, FaUsers, FaSignOutAlt, FaBars, FaCrown, 
-    FaHistory, FaUserCircle, FaChevronRight, FaChevronLeft, FaSearch, FaBell 
+import {
+    FaHome, FaBox, FaUsers, FaSignOutAlt, FaBars, FaCrown,
+    FaHistory, FaUserCircle, FaChevronRight, FaChevronLeft, FaSearch, FaBell
 } from 'react-icons/fa';
 import { TbCubePlus, TbDevicesPlus } from "react-icons/tb";
 import { MdInventory, MdOutlineHistoryEdu } from 'react-icons/md';
@@ -53,9 +53,9 @@ const DashboardLayoutRed = () => {
 
     return (
         <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
-            
+
             {/* --- SIDEBAR (Desktop) --- */}
-            <aside 
+            <aside
                 className={`hidden lg:flex flex-col bg-slate-900 text-white transition-all duration-300 relative z-20 
                 ${isSidebarOpen ? "w-64" : "w-20"}`}
             >
@@ -86,8 +86,8 @@ const DashboardLayoutRed = () => {
                             end={item.end}
                             className={({ isActive }) =>
                                 `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group relative
-                                ${isActive 
-                                    ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20" 
+                                ${isActive
+                                    ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
                                     : "text-slate-400 hover:bg-slate-800 hover:text-white"
                                 }`
                             }
@@ -109,7 +109,7 @@ const DashboardLayoutRed = () => {
 
                 {/* Profile Link (Bottom) */}
                 <div className="p-3 border-t border-slate-800/50">
-                    <NavLink to="/dashboard/profile" className={({isActive}) => `flex items-center gap-3 p-3 rounded-xl transition-colors ${isActive ? 'bg-slate-800' : 'hover:bg-slate-800'}`}>
+                    <NavLink to="/dashboard/profile" className={({ isActive }) => `flex items-center gap-3 p-3 rounded-xl transition-colors ${isActive ? 'bg-slate-800' : 'hover:bg-slate-800'}`}>
                         <div className="avatar">
                             <div className="w-9 rounded-full ring-1 ring-slate-600">
                                 <img src={user?.photoURL || "https://i.ibb.co/T0x6c6z/profile.png"} alt="user" />
@@ -123,7 +123,7 @@ const DashboardLayoutRed = () => {
                 </div>
 
                 {/* Toggle Button (Absolute) */}
-                <button 
+                <button
                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                     className="absolute -right-3 top-20 bg-blue-600 text-white p-1 rounded-full border-4 border-slate-50 shadow-sm hover:bg-blue-700 transition-colors z-30"
                 >
@@ -133,7 +133,7 @@ const DashboardLayoutRed = () => {
 
             {/* --- MAIN CONTENT WRAPPER --- */}
             <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-                
+
                 {/* HEADER */}
                 <header className="h-16 bg-white border-b border-slate-200 flex justify-between items-center px-4 lg:px-8 shrink-0 z-10">
                     {/* Mobile Menu Toggle */}
@@ -168,7 +168,7 @@ const DashboardLayoutRed = () => {
                         <div className="h-6 w-px bg-slate-200 mx-1"></div>
 
                         {/* Logout */}
-                        <button 
+                        <button
                             onClick={handleLogOut}
                             className="flex items-center gap-2 text-slate-500 hover:text-rose-600 text-sm font-bold transition-colors px-2"
                         >
@@ -180,12 +180,12 @@ const DashboardLayoutRed = () => {
 
                 {/* SCROLLABLE CONTENT AREA */}
                 <main className="flex-1 overflow-y-auto bg-slate-50 p-4 lg:p-8">
-                    <div className="max-w-7xl mx-auto">
+                    <div className="max-w-[1440px] mx-auto">
                         {/* Warning Banner */}
                         <div className="mb-6">
                             <LimitWarning />
                         </div>
-                        
+
                         {/* Page Outlet */}
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <Outlet />
@@ -240,7 +240,7 @@ const DashboardLayoutRed = () => {
                                 <p className="text-xs text-slate-500 capitalize">{role}</p>
                             </div>
                         </div>
-                        <button 
+                        <button
                             onClick={handleLogOut}
                             className="btn btn-error btn-outline btn-sm w-full text-white"
                         >

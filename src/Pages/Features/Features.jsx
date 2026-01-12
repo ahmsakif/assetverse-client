@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
-import { 
-    FaLaptopCode, FaUserCheck, FaClipboardList, FaMobileAlt, 
-    FaShieldAlt, FaChartPie, FaBell, FaFileExport, FaArrowRight 
+import {
+    FaLaptopCode, FaUserCheck, FaClipboardList, FaMobileAlt,
+    FaShieldAlt, FaChartPie, FaBell, FaFileExport, FaArrowRight
 } from 'react-icons/fa';
 import { MdOutlineInventory2, MdHistory } from 'react-icons/md';
 import { TbHierarchy3 } from 'react-icons/tb';
@@ -29,16 +29,16 @@ const Features = () => {
 
     return (
         <div className="mt-24 min-h-screen bg-slate-950 pt-24 pb-20 relative overflow-hidden font-sans">
-            
+
             {/* Background Effects */}
             <div className="absolute top-0 left-0 w-full h-[600px] bg-gradient-to-b from-blue-900/10 to-transparent pointer-events-none"></div>
             <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none"></div>
 
-            <div className="container mx-auto px-6 relative z-10 max-w-7xl">
-                
+            <div className="container mx-auto px-8 relative z-10 max-w-[1440px]">
+
                 {/* --- HERO SECTION --- */}
                 <div className="text-center mb-24 max-w-4xl mx-auto">
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-blue-400 text-xs font-bold uppercase tracking-widest mb-6"
@@ -46,8 +46,8 @@ const Features = () => {
                         <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
                         Platform Capabilities
                     </motion.div>
-                    
-                    <motion.h1 
+
+                    <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
@@ -58,8 +58,8 @@ const Features = () => {
                             master your inventory.
                         </span>
                     </motion.h1>
-                    
-                    <motion.p 
+
+                    <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.2 }}
@@ -70,7 +70,7 @@ const Features = () => {
                 </div>
 
                 {/* --- BENTO GRID FEATURES --- */}
-                <motion.div 
+                <motion.div
                     variants={containerVariants}
                     initial="hidden"
                     whileInView="visible"
@@ -88,7 +88,7 @@ const Features = () => {
                             </div>
                             <h3 className="text-2xl font-bold text-white mb-3">Real-Time Asset Tracking</h3>
                             <p className="text-slate-400 max-w-md">
-                                Monitor the status, location, and assignee of every asset in your organization instantly. 
+                                Monitor the status, location, and assignee of every asset in your organization instantly.
                                 Never lose track of a laptop or keycard again.
                             </p>
                         </div>
@@ -127,7 +127,7 @@ const Features = () => {
                             </div>
                             <h3 className="text-2xl font-bold text-white mb-3">Full Lifecycle Management</h3>
                             <p className="text-slate-400 max-w-md">
-                                Track an item from purchase to retirement. Log maintenance history, depreciation, 
+                                Track an item from purchase to retirement. Log maintenance history, depreciation,
                                 and return status (Returnable/Non-returnable).
                             </p>
                         </div>
@@ -135,7 +135,7 @@ const Features = () => {
                 </motion.div>
 
                 {/* --- DEEP DIVE SECTIONS --- */}
-                
+
                 {/* 1. For HR Managers */}
                 <div className="flex flex-col md:flex-row items-center gap-12 mb-32">
                     <div className="flex-1 space-y-8">
@@ -148,7 +148,7 @@ const Features = () => {
                         <p className="text-slate-400 text-lg leading-relaxed">
                             Stop using spreadsheets. AssetVerse gives you a powerful dashboard to approve requests, add new assets, and manage your team's needs efficiently.
                         </p>
-                        
+
                         <ul className="space-y-4">
                             <FeatureItem text="Bulk add assets to inventory" />
                             <FeatureItem text="One-click approval workflow" />
@@ -156,7 +156,7 @@ const Features = () => {
                             <FeatureItem text="Employee limit management" />
                         </ul>
                     </div>
-                    
+
                     {/* Visual Placeholder (Glass Card) */}
                     <div className="flex-1 w-full">
                         <div className="relative aspect-video bg-gradient-to-tr from-blue-900 to-slate-800 rounded-3xl border border-slate-700 shadow-2xl p-8 flex items-center justify-center group overflow-hidden">
@@ -179,7 +179,7 @@ const Features = () => {
                         <div className="relative aspect-video bg-gradient-to-bl from-indigo-900 to-slate-800 rounded-3xl border border-slate-700 shadow-2xl p-8 flex items-center justify-center group overflow-hidden">
                             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
                             <FaMobileAlt className="text-9xl text-white/10 group-hover:scale-110 transition-transform duration-500" />
-                             <div className="absolute top-6 right-6 bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-lg border border-slate-700">
+                            <div className="absolute top-6 right-6 bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-lg border border-slate-700">
                                 <p className="text-blue-400 font-bold text-xs uppercase">Mobile Ready</p>
                             </div>
                         </div>
@@ -195,7 +195,7 @@ const Features = () => {
                         <p className="text-slate-400 text-lg leading-relaxed">
                             No more email chains. Employees can browse the company catalog, request items, and track their approval status in real-time.
                         </p>
-                        
+
                         <ul className="space-y-4">
                             <FeatureItem text="Instant asset requests" />
                             <FeatureItem text="View personal asset history" />
@@ -208,7 +208,7 @@ const Features = () => {
                 {/* --- BOTTOM CTA --- */}
                 <div className="bg-blue-600 rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/20 to-transparent pointer-events-none"></div>
-                    
+
                     <h2 className="text-3xl md:text-5xl font-black text-white mb-6 relative z-10">
                         Ready to organize your assets?
                     </h2>
